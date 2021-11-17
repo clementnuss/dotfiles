@@ -1,0 +1,18 @@
+
+
+[kubernetes]
+format = 'on [⛵ $context \($namespace\)](blue) '
+disabled = false
+
+
+[username]
+format = "[$user]($style) "
+
+[hostname]
+ssh_only = false
+format =  "on [$hostname](bold green) "
+
+[time]
+disabled = false
+style = "bold white"
+format = '🕙[ $time ]($style) '
