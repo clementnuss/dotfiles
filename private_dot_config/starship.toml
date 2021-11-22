@@ -10,9 +10,9 @@ format = "[$user]($style) "
 
 [hostname]
 ssh_only = false
-format =  "on [$hostname](bold green) "
+format =  "on [$hostname](green) "
 
 [time]
 disabled = false
-style = "bold white"
+style = "white"
 format = '🕙[ $time ]($style) '
