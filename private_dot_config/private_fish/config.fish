@@ -17,8 +17,13 @@ eval (/home/linuxbrew/.linuxbrew/bin/brew shellenv)
 # Krew
 fish_add_path ~/.krew/bin
 
+# Rust
+fish_add_path ~/.cargo/bin 
+
 set -gx GOPATH $HOME/go
 fish_add_path $GOPATH/bin
 
 starship init fish | source
+
+set -gx EDITOR nvim
 
