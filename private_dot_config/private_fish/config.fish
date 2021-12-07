@@ -20,6 +20,9 @@ fish_add_path ~/.krew/bin
 # Rust
 fish_add_path ~/.cargo/bin 
 
+# LunarVim
+fish_add_path ~/.local/bin 
+
 set -gx GOPATH $HOME/go
 fish_add_path $GOPATH/bin
 
