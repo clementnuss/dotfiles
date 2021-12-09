@@ -192,6 +192,7 @@ lvim.plugins = {
       end,
     },
     {"dracula/vim"},
+  {"christoomey/vim-tmux-navigator"},
 }
 
 vim.opt.timeoutlen = 300
