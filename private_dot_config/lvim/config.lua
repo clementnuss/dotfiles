@@ -12,6 +12,7 @@ an executable
 lvim.log.level = "warn"
 lvim.format_on_save = true
 lvim.colorscheme = "onedarker"
+lvim.transparent_window = true
 
 -- keymappings [view all the defaults by pressing <leader>Lk]
 lvim.leader = "space"
@@ -76,7 +77,6 @@ lvim.builtin.treesitter.ignore_install = { "haskell" }
 lvim.builtin.treesitter.highlight.enabled = true
 
 local parser_configs = require("nvim-treesitter.parsers").get_parser_configs()
-
 parser_configs.markdown = {
   install_info = {
     url = "https://github.com/ikatyang/tree-sitter-markdown",
@@ -177,16 +177,7 @@ lvim.plugins = {
       "tpope/vim-surround",
       keys = {"c", "d", "y"},
       config = function ()
-        vim.cmd("nmap ds       <Plug>Dsurround")
-        vim.cmd("nmap cs       <Plug>Csurround")
-        vim.cmd("nmap cS       <Plug>CSurround")
-        vim.cmd("nmap ys       <Plug>Ysurround")
-        vim.cmd("nmap yS       <Plug>YSurround")
-        vim.cmd("nmap yss      <Plug>Yssurround")
-        vim.cmd("nmap ySs      <Plug>YSsurround")
-        vim.cmd("nmap ySS      <Plug>YSsurround")
-        vim.cmd("xmap gs       <Plug>VSurround")
-        vim.cmd("xmap gS       <Plug>VgSurround")
+        -- vim.cmd("let g:surround_no_mappings = 1")
       end
     },
     {
@@ -200,10 +191,11 @@ lvim.plugins = {
           }
       end,
     },
-   {"jeffkreeftmeijer/vim-numbertoggle"},
+    {"dracula/vim"},
 }
 
-vim.opt.timeoutlen = 250
+vim.opt.timeoutlen = 300
+vim.opt.relativenumber = true
 
 lvim.builtin.which_key.mappings["S"]= {
     name = "Session",
