@@ -1,3 +1,4 @@
-private_dot_config/private_fish/fish_variables
-private_dot_config/vim/plugin/
+.config/private_fish/fish_variables
+.config/vim/plugin/
+.config/lvim/plugin/
 README.md
