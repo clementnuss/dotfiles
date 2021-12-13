@@ -11,7 +11,7 @@ an executable
 -- general
 lvim.log.level = "warn"
 lvim.format_on_save = true
-lvim.colorscheme = "onedarker"
+lvim.colorscheme = "dracula"
 lvim.transparent_window = true
 
 -- keymappings [view all the defaults by pressing <leader>Lk]
@@ -193,6 +193,7 @@ lvim.plugins = {
     },
     {"dracula/vim"},
   {"christoomey/vim-tmux-navigator"},
+  {"vim-tmux-clipboard"},
 }
 
 vim.opt.timeoutlen = 300
