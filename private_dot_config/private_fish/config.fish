@@ -28,5 +28,5 @@ fish_add_path $GOPATH/bin
 
 starship init fish | source
 
-set -gx EDITOR nvim
+set -gx EDITOR lvim
 
