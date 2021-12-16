@@ -140,7 +140,7 @@ formatters.setup {
   --   ---@usage specify which filetypes to enable. By default a providers will attach to all the filetypes it supports.
   --   filetypes = { "typescript", "typescriptreact" },
   -- },
-    -- {exe = "prettier", filetypes = {"markdown"} },
+    {exe = "prettier", filetypes = {"markdown"} },
 
 }
 
@@ -193,7 +193,7 @@ lvim.plugins = {
     },
     {"dracula/vim"},
   {"christoomey/vim-tmux-navigator"},
-  {"vim-tmux-clipboard"},
+  {"roxma/vim-tmux-clipboard"},
 }
 
 vim.opt.timeoutlen = 300
