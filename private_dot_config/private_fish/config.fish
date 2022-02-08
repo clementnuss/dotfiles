@@ -29,4 +29,4 @@ fish_add_path $GOPATH/bin
 starship init fish | source
 
 set -gx EDITOR lvim
-
+set -gx COLORTERM truecolor

@@ -132,11 +132,6 @@ lvim.plugins = {
     end
   },
   {"roxma/vim-tmux-clipboard"},
-  {"puremourning/vimspector",
-      config = function ()
-        vim.cmd("let g:vimspector_enable_mappings = 'HUMAN'")
-      end
-  },
 }
 
 vim.opt.timeoutlen = 300
