@@ -8,10 +8,21 @@ disabled = false
 format = "[$user]($style) "
 
 [hostname]
-ssh_only = false
-format =  "on [$hostname](green) "
+ssh_only = true
+format = "on [$hostname](green) "
+
+[nodejs]
+disabled = true
+
+[golang]
+disabled = true
 
 [time]
 disabled = false
-# style = "white"
 format = '🕙[ $time ]($style) '
+
+[status]
+symbol = "🔴"
+format = '[\[$symbol $common_meaning$signal_name$maybe_int\]]($style) '
+map_symbol = true
+disabled = false
