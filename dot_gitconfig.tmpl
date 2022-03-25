@@ -1,0 +1,22 @@
+[user]
+	name = Clément Nussbaumer
+{{- if hasKey . "email" }}
+  email = {{ .email }}
+{{- else }}
+  email = clement@astutus.org
+{{- end }}
+[pull]
+	rebase = false
+	twohead = ort
+[init]
+	defaultBranch = main
+
+{{- if hasKey . "email" }} ## work environment
+[url "https://github.com/"]
+        insteadOf = git@github.com:
+[credential "https://github.com"]
+	username = clementnuss
+[credential]
+	helper = cache --timeout=86400
+{{- end -}}
+
