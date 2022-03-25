@@ -6,3 +6,8 @@
         - bold
       inactiveBorderColor:
         - black
+
+  git:
+    paging:
+      colorArg: always
+      pager: delta --light --paging=never
