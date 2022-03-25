@@ -2,7 +2,8 @@
 lvim.log.level = "warn"
 lvim.format_on_save = true
 lvim.colorscheme = "solarized"
-lvim.transparent_window = true
+lvim.transparent_window = false
+lvim.builtin.bufferline.active = false
 
 -- keymappings [view all the defaults by pressing <leader>Lk]
 lvim.leader = "space"
