@@ -11,9 +11,13 @@ function fish_user_key_bindings
     fish_vi_key_bindings --no-erase insert
 end
 
-# Homebrew
+set -gx K9SCONFIG ~/.config/k9s/
+set -gx LG_CONFIG_FILE ~/.config/lazygit/config.yml
+{{if eq .chezmoi.os "darwin"}}
+eval (/opt/homebrew/bin/brew shellenv)
+{{ else }}
 eval (/home/linuxbrew/.linuxbrew/bin/brew shellenv)
-
+{{ end }}
 # Krew
 fish_add_path ~/.krew/bin
 
