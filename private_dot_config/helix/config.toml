@@ -1,0 +1,6 @@
+theme = "spacebones_light"
+
+[editor]
+
+line-number = "relative"
+
