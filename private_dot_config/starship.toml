@@ -1,15 +1,18 @@
 
-
 [kubernetes]
-format = 'on [⛵ $context \($namespace\)](blue) '
+format = '[$symbol$context \($namespace\)](#633c01) '
 disabled = false
+symbol = "⛵"  
 
 [username]
-format = "[$user]($style) "
+format = "[$user](bold #0969da) "
 
 [hostname]
 ssh_only = true
-format = "on [$hostname](green) "
+format = "on [$hostname](#1a7f37) "
+
+[directory]
+style = "#0969da"
 
 [nodejs]
 disabled = true
@@ -19,7 +22,7 @@ disabled = true
 
 [time]
 disabled = false
-format = '🕙[ $time ]($style) '
+format = '🕙[ $time ](#0969da) '
 
 [status]
 symbol = "🔴"
