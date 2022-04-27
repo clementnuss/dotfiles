@@ -15,10 +15,6 @@ vim.g.maplocalleader = " "
 -- jj as <esc>
 keymap("i", "jj", "<esc>", opts)
 
--- Shift + J/K moves selected lines down/up in visual mode
-keymap("v", "J", ":m '>+1<CR>gv=gv", opts)
-keymap("v", "K", ":m '<-2<CR>gv=gv", opts)
-
 -- Stay in indent mode
 -- keymap("v", "<", "<gv", opts)
 -- keymap("v", ">", ">gv", opts)
@@ -34,9 +30,6 @@ keymap("v", "K", ":m '<-2<CR>gv=gv", opts)
 -- vim.g.symbols_outline = {
 -- 	auto_close = true,
 -- }
-
--- toggleterm
-keymap("n", "<leader>T", ":ToggleTerm<cr>", opts)
 
 -- -- yode
 -- keymap("v", "<leader>yy", ":YodeCreateSeditorFloating<cr>", opts)

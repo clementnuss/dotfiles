@@ -1,8 +1,9 @@
 local o = vim.opt
 
--- o.expandtab = true -- Use spaces instead of tabs
--- o.shiftwidth = 2 -- Size of an indent
--- o.tabstop = 2 -- Number of spaces tabs count for
+o.mouse = "a"
+o.expandtab = true -- Use spaces instead of tabs
+o.shiftwidth = 2 -- Size of an indent
+o.tabstop = 2 -- Number of spaces tabs count for
 
 -- o.smartindent = true -- Insert indents automatically
 o.smartcase = true -- Don't ignore case with capitals
@@ -26,8 +27,9 @@ o.number = true -- Print line number
 o.relativenumber = true -- Relative line numbers
 o.wrap = true -- Enable line wrap
 o.cmdheight = 1 -- More space to display messages
-o.timeoutlen = 300 -- Don't wait more that 300ms for normal mode commands
+o.timeoutlen = 500 -- Don't wait more that 300ms for normal mode commands
 o.termguicolors = true -- True color support
+
 -- o.shada = { "!", "'1000", "<50", "s10", "h" } -- remember stuff across sessions
 -- o.laststatus = 3 -- use global status line
 

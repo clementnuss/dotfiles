@@ -1,4 +1,6 @@
 .config/fish/fish_variables
 .config/vim/plugin/
 .config/lvim/plugin/
+.config/nvim/plugin/
+.config/nvim/sessions/
 README.md
