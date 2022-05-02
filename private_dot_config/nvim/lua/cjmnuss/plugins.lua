@@ -28,7 +28,6 @@ return require('packer').startup(function()
   use 'tpope/vim-commentary'
   use 'tpope/vim-repeat'
   use 'tpope/vim-unimpaired'
-  -- use 'tpope/vim-obsession'
 
   use({
   "folke/persistence.nvim",
@@ -42,12 +41,17 @@ return require('packer').startup(function()
 
 use 'ntpeters/vim-better-whitespace'
 
-  -- use {
-  -- "folke/which-key.nvim",
-  -- config = function()
-  --   require("which-key").setup {}
-  -- end
-  -- }
+  -- tmux integration
+  use {'christoomey/vim-tmux-navigator',
+    config = function ()
+      vim.cmd("let g:tmux_navigator_no_mappings = 1")
+      vim.cmd("nnoremap <silent> <C-w>h :TmuxNavigateLeft<cr>")
+      vim.cmd("nnoremap <silent> <C-w>j :TmuxNavigateDown<cr>")
+      vim.cmd("nnoremap <silent> <C-w>k :TmuxNavigateUp<cr>")
+      vim.cmd("nnoremap <silent> <C-w>l :TmuxNavigateRight<cr>")
+      vim.cmd("nnoremap <silent> <C-w>\\ :TmuxNavigatePrevious<cr>")
+    end
+  }
 
   use {
   'lewis6991/gitsigns.nvim',
@@ -69,7 +73,7 @@ use 'ntpeters/vim-better-whitespace'
   --   vim.cmd("nnoremap <silent>[V :BufferLineMovePrev<CR>")
   -- end
   -- }
-  
+
 
   -- color themes
   -- use 'projekt0n/github-nvim-theme'
