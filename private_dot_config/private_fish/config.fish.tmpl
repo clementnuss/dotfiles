@@ -1,37 +1,39 @@
 
-fish_vi_key_bindings
-function fish_user_key_bindings
-    # Execute this once per mode that emacs bindings should be used in
-    fish_default_key_bindings -M insert
-
-    # Then execute the vi-bindings so they take precedence when there's a conflict.
-    # Without --no-erase fish_vi_key_bindings will default to
-    # resetting all bindings.
-    # The argument specifies the initial mode (insert, "default" or visual).
-    fish_vi_key_bindings --no-erase insert
+function fish_hybrid_key_bindings --description \
+"Vi-style bindings that inherit emacs-style bindings in all modes"
+    for mode in default insert visual
+        fish_default_key_bindings -M $mode
+    end
+    fish_vi_key_bindings --no-erase
 end
+set -g fish_key_bindings fish_hybrid_key_bindings
 
 set -gx K9SCONFIG ~/.config/k9s/
 set -gx LG_CONFIG_FILE ~/.config/lazygit/config.yml
-{{if eq .chezmoi.os "darwin"}}
-eval (/opt/homebrew/bin/brew shellenv)
-{{ else }}
-eval (/home/linuxbrew/.linuxbrew/bin/brew shellenv)
-{{ end }}
+
+if test -e  /nix/var/nix/profiles/default/etc/profile.d//nix-daemon.sh
+    bass source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+end
+
 # Krew
-fish_add_path ~/.krew/bin
+if test -d ~/.krew/bin
+    fish_add_path ~/.krew/bin
+end
 
 # Rust
-fish_add_path ~/.cargo/bin 
-
-# LunarVim
-fish_add_path ~/.local/bin 
+if test -d ~/.cargo/bin
+    fish_add_path ~/.cargo/bin
+end
 
 # node - npm
-fish_add_path ~/node_modules/.bin
+if test -d ~/node_modules/.bin
+    fish_add_path ~/node_modules/.bin
+end
 
-set -gx GOPATH $HOME/go
-fish_add_path $GOPATH/bin
+if test -d ~/go
+    set -gx GOPATH $HOME/go
+    fish_add_path $GOPATH/bin
+end
 
 starship init fish | source
 
