@@ -1,11 +1,11 @@
-  gui:
-    theme:
-      lightTheme: true
-      activeBorderColor:
-        - black
-        - bold
-      inactiveBorderColor:
-        - black
+  # gui:
+    # theme:
+    #   lightTheme: true
+    #   activeBorderColor:
+    #     - black
+    #     - bold
+    #   inactiveBorderColor:
+    #     - black
 
   git:
     paging:
