@@ -28,6 +28,7 @@ return require('packer').startup(function()
   use 'tpope/vim-commentary'
   use 'tpope/vim-repeat'
   use 'tpope/vim-unimpaired'
+  use 'tpope/vim-fugitive'
 
   use({
   "folke/persistence.nvim",
@@ -39,9 +40,10 @@ return require('packer').startup(function()
 })
 
 
-use 'ntpeters/vim-better-whitespace'
+  use 'ntpeters/vim-better-whitespace'
 
   -- tmux integration
+  use 'roxma/vim-tmux-clipboard'
   use {'christoomey/vim-tmux-navigator',
     config = function ()
       vim.cmd("let g:tmux_navigator_no_mappings = 1")
