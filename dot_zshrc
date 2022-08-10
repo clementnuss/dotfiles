@@ -1,0 +1,19 @@
+
+source ~/.zsh_config/antigen.zsh
+antigen init ~/.antigenrc
+
+eval "$(starship init zsh)"
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# Lazygit config
+export CONFIG_DIR="$HOME/.config/lazygit"
+# K9s config
+export K9SCONFIG=~/.config/k9s/
+
+# Go path:
+export GOPATH=~/go
+export PATH=$PATH:$(go env GOPATH)/bin
+export PATH="${PATH}:${HOME}/.krew/bin"
+
+
