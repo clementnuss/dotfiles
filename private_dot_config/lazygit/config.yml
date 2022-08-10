@@ -1,11 +1,8 @@
-  # gui:
-    # theme:
-    #   lightTheme: true
-    #   activeBorderColor:
-    #     - black
-    #     - bold
-    #   inactiveBorderColor:
-    #     - black
+gui:
+  theme:
+    lightTheme: false # For terminals with a light background
+    selectedLineBgColor:
+      - default # set to `default` to have no background colour
 
   git:
     paging:
