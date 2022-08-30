@@ -4,16 +4,23 @@ antigen init ~/.antigenrc
 
 eval "$(starship init zsh)"
 
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+# Define an init function and append to zvm_after_init_commands
+function fzf_init() {
+  [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+}
+zvm_after_init_commands+=(fzf_init)
 
 # Lazygit config
 export CONFIG_DIR="$HOME/.config/lazygit"
 # K9s config
 export K9SCONFIG=~/.config/k9s/
 
+# optional local .zshrc
+[ -f ~/.zshrc-local ] && source ~/.zshrc-local
+
 # Go path:
 export GOPATH=~/go
-export PATH=$PATH:$(go env GOPATH)/bin
+export PATH="$PATH:$(go env GOPATH)/bin"
 export PATH="${PATH}:${HOME}/.krew/bin"
 
 
