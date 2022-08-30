@@ -19,8 +19,8 @@ export K9SCONFIG=~/.config/k9s/
 [ -f ~/.zshrc-local ] && source ~/.zshrc-local
 
 # Go path:
-export GOPATH=~/go
-export PATH="$PATH:$(go env GOPATH)/bin"
-export PATH="${PATH}:${HOME}/.krew/bin"
+path+=("$(go env GOPATH)/bin")
+path+=("$HOME/.krew/bin")
 
+export PATH
 
