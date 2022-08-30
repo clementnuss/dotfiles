@@ -7,4 +7,5 @@ return {
   color_scheme = "zenwritten_light",
   -- color_scheme = "Night Owlish Light",
   -- color_scheme = "Github_custom",
+  audible_bell = "Disabled",
 }
