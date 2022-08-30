@@ -24,3 +24,14 @@ path+=("$HOME/.krew/bin")
 
 export PATH
 
+# kubernetes helper functions
+function klogin() {
+  unset KUBECONFIG
+  kubectl-login
+  cat $HOME/.kube/config | yq eval '.users[0].user.as = .users[0].name' - | yq eval '.users[0].user.as-groups = ["system:masters"]' - > $HOME/.kube/config-sudo;
+}
+
+function ksuper() {
+    export KUBECONFIG=$HOME/.kube/config-sudo
+}
+
