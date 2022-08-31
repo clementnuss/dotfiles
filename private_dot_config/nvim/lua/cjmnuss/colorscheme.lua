@@ -1,13 +1,9 @@
 
-vim.opt.background = "light"
-
- vim.g.zenbones = {
- 	darken_noncurrent_window = true,
- }
+-- vim.opt.background = "light"
 
  vim.cmd('set termguicolors')
 
- local colorscheme = "zenbones"
+ local colorscheme = "dayfox"
 
  local status_ok, _ = pcall(vim.cmd, "colorscheme " .. colorscheme)
  if not status_ok then
@@ -15,3 +11,10 @@ vim.opt.background = "light"
  	return
  end
 
+require('lualine').setup()
+
+-- https://github.com/navarasu/onedark.nvim
+-- require('onedark').setup {
+--     style = 'light'
+-- }
+-- require('onedark').load()

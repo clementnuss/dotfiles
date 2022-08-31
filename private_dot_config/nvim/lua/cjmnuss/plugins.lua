@@ -63,6 +63,17 @@ return require('packer').startup(function()
   }
   use 'ggandor/lightspeed.nvim'
 
+  --
+  use {
+    'nvim-lualine/lualine.nvim',
+    requires = { 'kyazdani42/nvim-web-devicons', opt = true }
+  }
+
+  use {
+    "nanozuki/tabby.nvim",
+    config = function() require("tabby").setup() end,
+  }
+
   -- buffers
   -- use {'akinsho/bufferline.nvim', tag = "*", requires = 'kyazdani42/nvim-web-devicons',
   -- config = function()
@@ -87,5 +98,6 @@ return require('packer').startup(function()
     -- In Vim, compat mode is turned on as Lush only works in Neovim.
     requires = "rktjmp/lush.nvim"
 }
+  use "EdenEast/nightfox.nvim"
 
 end)
