@@ -40,6 +40,8 @@ path+=("$HOME/.krew/bin")
 
 export PATH
 
+export EDITOR=nvim
+
 # kubernetes helper functions
 function klogin() {
   unset KUBECONFIG
