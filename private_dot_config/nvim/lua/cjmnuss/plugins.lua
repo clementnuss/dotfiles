@@ -61,7 +61,13 @@ return require('packer').startup(function()
     require('gitsigns').setup()
   end
   }
-  use 'ggandor/lightspeed.nvim'
+
+  use {
+    'ggandor/leap.nvim',
+    config = function()
+      require('leap').add_default_mappings()
+    end
+  }
 
   --
   use {
