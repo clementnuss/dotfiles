@@ -1,6 +1,11 @@
 gui:
   theme:
-    lightTheme: false # For terminals with a light background
+    lightTheme: true # For terminals with a light background
+    activeBorderColor:
+      - black
+      - bold
+    inactiveBorderColor:
+      - black
     selectedLineBgColor:
       - default # set to `default` to have no background colour
 
