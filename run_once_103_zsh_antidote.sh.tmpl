@@ -1,0 +1,9 @@
+#! /bin/bash
+
+antidote_dir={{ .chezmoi.homeDir }}/.antidote
+
+if [[ ! -d $cheat_dir ]]
+then
+  git clone --depth=1 https://github.com/mattmc3/antidote.git $antidote_dir
+fi
+
