@@ -1,0 +1,22 @@
+agkozak/zsh-z
+jeffreytse/zsh-vi-mode
+olets/zsh-abbr    kind:defer
+
+zsh-users/zsh-completions
+
+belak/zsh-utils path:editor
+belak/zsh-utils path:history
+belak/zsh-utils path:prompt
+belak/zsh-utils path:utility
+belak/zsh-utils path:completion
+
+ohmyzsh/ohmyzsh path:lib
+ohmyzsh/ohmyzsh path:plugins/colored-man-pages
+ohmyzsh/ohmyzsh path:plugins/docker
+ohmyzsh/ohmyzsh path:plugins/kubectl
+
+# popular fish-like plugins
+mattmc3/zfunctions
+zsh-users/zsh-autosuggestions
+zdharma-continuum/fast-syntax-highlighting kind:defer
+zsh-users/zsh-history-substring-search
