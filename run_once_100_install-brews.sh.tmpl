@@ -1,6 +1,7 @@
 #!/bin/bash
 
 brew bundle --no-lock --file=/dev/stdin <<EOF
+tap "homebrew/cask-fonts"
 brew "fish"
 brew "starship"
 brew "neovim"
@@ -18,5 +19,7 @@ brew "duf"
 brew "tmux"
 brew "ripgrep"
 brew "sshuttle"
+cask "font-hack-nerd-font"
+cask "font-iosevka"
 EOF
 
