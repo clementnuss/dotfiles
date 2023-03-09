@@ -1,10 +1,10 @@
 local wezterm = require 'wezterm';
 return {
   font = wezterm.font_with_fallback{
-    { family = "Iosevka Term"},
+    { family = "SF Mono"},
     "Symbols NF",
   },
-  font_size=16,
+  font_size=14,
   line_height=1.2,
   hide_tab_bar_if_only_one_tab = true,
   -- color_scheme = "Builtin Solarized Light",
