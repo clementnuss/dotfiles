@@ -5,11 +5,19 @@ gui:
       - black
       - bold
     inactiveBorderColor:
-      - black
+      - grey
     selectedLineBgColor:
       - default # set to `default` to have no background colour
 
-  git:
-    paging:
-      colorArg: always
-      pager: delta --light --paging=never
+git:
+  commit:
+    signOff: true
+  paging:
+    colorArg: always
+    pager: delta --light --paging=never
+
+os:
+  openCommand: "code -rg {{filename}}"
+  editCommand: nvim
+  editCommandTemplate: '{{editor}} +{{line}} -- {{filename}}'
+
