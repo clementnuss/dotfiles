@@ -2,7 +2,9 @@
 [kubernetes]
 format = '[$symbol$context \($namespace\)](#633c01) '
 disabled = false
-symbol = "⛵"  
+detect_folders = [ 'k8s' ]
+detect_files = [ '.k8s' ]
+symbol = "⛵"
 
 [username]
 format = "[$user](bold #0969da) "
