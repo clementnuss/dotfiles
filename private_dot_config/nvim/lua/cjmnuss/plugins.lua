@@ -95,7 +95,7 @@ return require('packer').startup(function()
 
 
   -- color themes
-  -- use 'projekt0n/github-nvim-theme'
+  use 'projekt0n/github-nvim-theme'
   use 'shaunsingh/solarized.nvim'
   use {
     "mcchrish/zenbones.nvim",
