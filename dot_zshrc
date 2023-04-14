@@ -4,7 +4,7 @@ zstyle ':zsh-utils:plugins:history' use-xdg-basedirs 'no'
 source ${ZDOTDIR:-~}/.antidote/antidote.zsh
 
 if type brew &>/dev/null; then
-  FPATH=$(brew --prefix)/share/zsh/site-functions:$FPATH
+  FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
 fi
 
 # set omz variables
@@ -39,11 +39,12 @@ export EDITOR=nvim
 # kubernetes helper functions
 function klogin() {
   unset KUBECONFIG
-  kubectl-login
-  cat $HOME/.kube/config | yq eval '.users[0].user.as = .users[0].name' - | yq eval '.users[0].user.as-groups = ["system:masters"]' - > $HOME/.kube/config-sudo;
+  kubectl-login --login-methods YubiKey
+  yq -i '.users[0].user.as = .users[0].name |
+    .users[0].user.as-groups = ["system:masters"]' \
+    $HOME/.kube/config
 }
 
-function ksuper() {
-    export KUBECONFIG=$HOME/.kube/config-sudo
-}
+KUBESESS_COMPLETION_FILE=$(brew --prefix)/share/zsh/site-functions/kubesess.sh
+[ -f $KUBESESS_COMPLETION_FILE ] && source $KUBESESS_COMPLETION_FILE
 
