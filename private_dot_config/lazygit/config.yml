@@ -17,7 +17,5 @@ git:
     pager: delta --light --paging=never
 
 os:
-  openCommand: "code -rg {{filename}}"
-  editCommand: nvim
-  editCommandTemplate: '{{editor}} +{{line}} -- {{filename}}'
+  editPreset: nvim
 
