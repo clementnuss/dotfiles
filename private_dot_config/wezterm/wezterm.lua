@@ -15,13 +15,15 @@ config.keys = {
   }
 }
 
-config.font_size=14
-config.line_height=1
+-- config.font_size=14
+-- config.line_height=1
 config.hide_tab_bar_if_only_one_tab = true
 -- config.color_scheme = "zenbones_light"
 -- config.color_scheme = "BlulocoLight"
 -- config.color_scheme = "Night Owlish Light"
-config.color_scheme = "Google (light) (terminal.sexy)"
+-- config.color_scheme = "Google (light) (terminal.sexy)"
+config.color_scheme = 'Solarized (light) (terminal.sexy)'
+
 config.audible_bell = "Disabled"
 
 return config
