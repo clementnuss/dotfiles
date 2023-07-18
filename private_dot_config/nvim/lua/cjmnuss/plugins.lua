@@ -44,16 +44,18 @@ return require('packer').startup(function()
 
   -- tmux integration
   use 'roxma/vim-tmux-clipboard'
-  use {'christoomey/vim-tmux-navigator',
-    config = function ()
-      vim.cmd("let g:tmux_navigator_no_mappings = 1")
-      vim.cmd("nnoremap <silent> <C-w>h :TmuxNavigateLeft<cr>")
-      vim.cmd("nnoremap <silent> <C-w>j :TmuxNavigateDown<cr>")
-      vim.cmd("nnoremap <silent> <C-w>k :TmuxNavigateUp<cr>")
-      vim.cmd("nnoremap <silent> <C-w>l :TmuxNavigateRight<cr>")
-      vim.cmd("nnoremap <silent> <C-w>\\ :TmuxNavigatePrevious<cr>")
-    end
-  }
+  use 'sunaku/tmux-navigate'
+
+  -- use {'christoomey/vim-tmux-navigator',
+  --   config = function ()
+  --     vim.cmd("let g:tmux_navigator_no_mappings = 1")
+  --     vim.cmd("nnoremap <silent> <C-w>h :TmuxNavigateLeft<cr>")
+  --     vim.cmd("nnoremap <silent> <C-w>j :TmuxNavigateDown<cr>")
+  --     vim.cmd("nnoremap <silent> <C-w>k :TmuxNavigateUp<cr>")
+  --     vim.cmd("nnoremap <silent> <C-w>l :TmuxNavigateRight<cr>")
+  --     vim.cmd("nnoremap <silent> <C-w>\\ :TmuxNavigatePrevious<cr>")
+  --   end
+  -- }
 
   use {
   'lewis6991/gitsigns.nvim',
