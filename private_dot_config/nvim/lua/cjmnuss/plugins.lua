@@ -97,26 +97,6 @@ return require('packer').startup(function()
 
 
   -- color themes
-  use({
-  'projekt0n/github-nvim-theme', tag = 'v0.0.7',
-  config = function()
-    require('github-theme').setup({
-      -- Change the "hint" color to the "orange" color, and make the "error" color bright red
-      colors = {hint = "orange", error = "#ff0000"},
-    })
-
-    vim.cmd('colorscheme github_light')
-  end
-})
-
-  -- use 'shaunsingh/solarized.nvim'
-  -- use {
-  --   "mcchrish/zenbones.nvim",
-  --   -- Optionally install Lush. Allows for more configuration or extending the colorscheme
-  --   -- If you don't want to install lush, make sure to set g:zenbones_compat = 1
-  --   -- In Vim, compat mode is turned on as Lush only works in Neovim.
-  --   requires = "rktjmp/lush.nvim"
--- }
-  -- use "EdenEast/nightfox.nvim"
+use { "catppuccin/nvim", as = "catppuccin" }
 
 end)
