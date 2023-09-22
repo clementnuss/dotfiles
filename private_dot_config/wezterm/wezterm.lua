@@ -22,7 +22,8 @@ config.hide_tab_bar_if_only_one_tab = true
 -- config.color_scheme = "BlulocoLight"
 -- config.color_scheme = "Night Owlish Light"
 -- config.color_scheme = "Google (light) (terminal.sexy)"
-config.color_scheme = 'Solarized (light) (terminal.sexy)'
+-- config.color_scheme = 'Solarized (light) (terminal.sexy)'
+config.color_scheme = 'Catppuccin Latte'
 
 config.audible_bell = "Disabled"
 
