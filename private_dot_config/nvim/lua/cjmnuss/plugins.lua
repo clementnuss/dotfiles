@@ -46,16 +46,15 @@ return require('packer').startup(function()
   use 'roxma/vim-tmux-clipboard'
   use 'sunaku/tmux-navigate'
 
-  -- use {'christoomey/vim-tmux-navigator',
-  --   config = function ()
-  --     vim.cmd("let g:tmux_navigator_no_mappings = 1")
-  --     vim.cmd("nnoremap <silent> <C-w>h :TmuxNavigateLeft<cr>")
-  --     vim.cmd("nnoremap <silent> <C-w>j :TmuxNavigateDown<cr>")
-  --     vim.cmd("nnoremap <silent> <C-w>k :TmuxNavigateUp<cr>")
-  --     vim.cmd("nnoremap <silent> <C-w>l :TmuxNavigateRight<cr>")
-  --     vim.cmd("nnoremap <silent> <C-w>\\ :TmuxNavigatePrevious<cr>")
-  --   end
-  -- }
+  use({ "iamcco/markdown-preview.nvim", run = "cd app && npm install", setup = function()
+    vim.g.mkdp_filetypes = { "markdown" }
+    vim.cmd([[
+      function OpenMarkdownPreview (url)
+        execute "silent ! open --new -a 'Google Chrome' --args --new-window " . a:url
+      endfunction
+      let g:mkdp_browserfunc = 'OpenMarkdownPreview'
+    ]])
+  end, ft = { "markdown" }, })
 
   use {
   'lewis6991/gitsigns.nvim',
@@ -100,3 +99,4 @@ return require('packer').startup(function()
 use { "catppuccin/nvim", as = "catppuccin" }
 
 end)
+
