@@ -3,6 +3,9 @@ zstyle ':antidote:bundle' use-friendly-names 'yes'
 zstyle ':zsh-utils:plugins:history' use-xdg-basedirs 'no'
 source ${ZDOTDIR:-~}/.antidote/antidote.zsh
 
+# config home
+export XDG_CONFIG_HOME=~/.config
+
 if type brew &>/dev/null; then
   FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
 fi
@@ -12,7 +15,6 @@ ZSH=$(antidote path ohmyzsh/ohmyzsh)
 ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/oh-my-zsh"
 [[ -d $ZSH_CACHE_DIR ]] || mkdir -p $ZSH_CACHE_DIR
 [[ -d $ZSH_CACHE_DIR/completions ]] || mkdir -p $ZSH_CACHE_DIR/completions
-
 antidote load
 
 eval "$(starship init zsh)"
@@ -47,4 +49,10 @@ function klogin() {
 
 KUBESESS_COMPLETION_FILE=$(brew --prefix)/share/zsh/site-functions/kubesess.sh
 [ -f $KUBESESS_COMPLETION_FILE ] && source $KUBESESS_COMPLETION_FILE
+
+
+function atuin_init() {
+  eval "$(atuin init zsh)"
+}
+zvm_after_init_commands+=(atuin_init)
 

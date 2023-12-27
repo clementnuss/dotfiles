@@ -5,7 +5,7 @@ right_format = """$kubernetes"""
 [kubernetes]
 format = '[$symbol$context \($namespace\)]($style) '
 style = "mauve"
-disabled = false
+disabled = true
 symbol = "⛵ "
 
 [hostname]
