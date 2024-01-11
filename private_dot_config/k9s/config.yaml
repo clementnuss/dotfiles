@@ -19,7 +19,6 @@ k9s:
     limits:
       cpu: 100m
       memory: 100Mi
-    tty: true
   imageScans:
     enable: false
     exclusions:
@@ -36,7 +35,6 @@ k9s:
     tail: 100
     buffer: 5000
     sinceSeconds: 300
-    fullScreenLogs: false
     textWrap: false
     showTime: false
   thresholds:
