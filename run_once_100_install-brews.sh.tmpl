@@ -1,16 +1,16 @@
 #!/bin/bash
 
 brew bundle --no-lock --file=/dev/stdin <<EOF
-# tap "homebrew/cask-fonts"
 brew "bash" # tmux/extrakto needs a recent bash
-brew "fish"
 brew "starship"
 brew "neovim"
 brew "git"
 brew "coreutils"
 brew "fzf"
+brew "atuin"
 brew "bat"
 brew "fd"
+brew "fx"
 brew "kubectl"
 brew "krew"
 brew "yq"
@@ -21,10 +21,10 @@ brew "duf"
 brew "tmux"
 brew "ripgrep"
 brew "sshuttle"
-# cask "font-hack-nerd-font"
-# cask "font-iosevka"
 brew "lazygit"
+brew "lazydocker"
 brew "kubesess"
 brew "entr"
+brew "page"
 EOF
 
