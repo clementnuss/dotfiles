@@ -42,9 +42,6 @@ export EDITOR=nvim
 function klogin() {
   unset KUBECONFIG
   kubectl-login --login-methods YubiKey
-  yq -i '.users[0].user.as = .users[0].name |
-    .users[0].user.as-groups = ["system:masters"]' \
-    $HOME/.kube/config
 }
 
 KUBESESS_COMPLETION_FILE=$(brew --prefix)/share/zsh/site-functions/kubesess.sh
