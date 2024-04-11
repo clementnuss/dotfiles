@@ -39,6 +39,16 @@ return require('packer').startup(function()
   end,
 })
 
+  use({
+      "kdheepak/lazygit.nvim",
+      -- optional for floating window border decoration
+      requires = {
+          "nvim-lua/plenary.nvim",
+      },
+    config = function ()
+      vim.cmd("nnoremap <silent> <leader>gg :LazyGit<cr>")
+    end
+  })
 
   use 'ntpeters/vim-better-whitespace'
 
@@ -46,15 +56,15 @@ return require('packer').startup(function()
   use 'roxma/vim-tmux-clipboard'
   use 'sunaku/tmux-navigate'
 
-  use({ "iamcco/markdown-preview.nvim", run = "cd app && npm install", setup = function()
-    vim.g.mkdp_filetypes = { "markdown" }
-    vim.cmd([[
-      function OpenMarkdownPreview (url)
-        execute "silent ! open --new -a 'Google Chrome' --args --new-window " . a:url
-      endfunction
-      let g:mkdp_browserfunc = 'OpenMarkdownPreview'
-    ]])
-  end, ft = { "markdown" }, })
+  -- use({ "iamcco/markdown-preview.nvim", run = "cd app && npm install", setup = function()
+  --   vim.g.mkdp_filetypes = { "markdown" }
+  --   vim.cmd([[
+  --     function OpenMarkdownPreview (url)
+  --       execute "silent ! open --new -a 'Google Chrome' --args --new-window " . a:url
+  --     endfunction
+  --     let g:mkdp_browserfunc = 'OpenMarkdownPreview'
+  --   ]])
+  -- end, ft = { "markdown" }, })
 
   use {
   'lewis6991/gitsigns.nvim',
