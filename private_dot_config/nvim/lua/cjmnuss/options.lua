@@ -8,7 +8,7 @@ o.tabstop = 2 -- Number of spaces tabs count for
 -- o.smartindent = true -- Insert indents automatically
 o.smartcase = true -- Don't ignore case with capitals
 
--- o.hidden = true -- Enable modified buffers in background
+o.hidden = true -- Enable modified buffers in background
 o.ignorecase = true -- Ignore case
 o.undofile = true -- enable persistent undo
 o.updatetime = 300 -- faster completion (4000ms default)
@@ -27,7 +27,7 @@ o.number = true -- Print line number
 o.relativenumber = true -- Relative line numbers
 o.wrap = true -- Enable line wrap
 o.cmdheight = 1 -- More space to display messages
-o.timeoutlen = 500 -- Don't wait more that 300ms for normal mode commands
+o.timeoutlen = 200 -- Don't wait more that 200ms for normal mode commands
 o.termguicolors = true -- True color support
 
 -- o.shada = { "!", "'1000", "<50", "s10", "h" } -- remember stuff across sessions
@@ -45,3 +45,12 @@ o.termguicolors = true -- True color support
 -- o.foldnestmax = 5
 -- o.foldminlines = 1
 -- o.foldenable = false -- folds are open per default. use zx to fold when opend with telescope
+local group_cdpwd = vim.api.nvim_create_augroup("group_cdpwd", { clear = true })
+vim.api.nvim_create_autocmd("VimEnter", {
+  group = group_cdpwd,
+  pattern = "*",
+  callback = function()
+    vim.api.nvim_set_current_dir(vim.fn.expand("%:p:h"))
+  end,
+})
+
