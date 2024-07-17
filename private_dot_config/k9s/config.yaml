@@ -7,7 +7,7 @@ k9s:
   ui:
     enableMouse: true
     headless: false
-    logoless: false
+    logoless: true
     crumbsless: false
     noIcons: false
     skin: catpuccin_latte
