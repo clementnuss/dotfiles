@@ -1,7 +1,2 @@
-require('cjmnuss.plugins')
-require('cjmnuss.colorscheme')
-require('cjmnuss.options')
-require('cjmnuss.keymaps')
-require('cjmnuss.persistence')
-
-
+-- bootstrap lazy.nvim, LazyVim and your plugins
+require("config.lazy")
