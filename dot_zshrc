@@ -19,6 +19,12 @@ antidote load
 
 eval "$(starship init zsh)"
 
+function zvm_vi_yank() {
+	zvm_yank
+	echo ${CUTBUFFER} | pbcopy
+	zvm_exit_visual_mode
+}
+
 # Define an init function and append to zvm_after_init_commands
 function fzf_init() {
   [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
@@ -41,6 +47,7 @@ export EDITOR=nvim
 # kubernetes helper functions
 function klogin() {
   unset KUBECONFIG
+  rm -rf ~/.kube/kubesess/
   kubectl-login --login-methods YubiKey
 }
 
