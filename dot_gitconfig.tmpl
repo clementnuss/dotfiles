@@ -46,4 +46,10 @@
 	autoSetupRemote = true
 [credential]
 	helper = cache --timeout=86400
+[filter "lfs"]
+    clean = git-lfs clean -- %f
+    smudge = git-lfs smudge -- %f
+    process = git-lfs filter-process
+    required = true
+
 {{- end -}}
