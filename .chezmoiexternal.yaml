@@ -1,0 +1,9 @@
+.tmux/plugins/tpm:
+  type: git-repo
+  url: https://github.com/tmux-plugins/tpm
+  refreshPeriod: 168h
+
+# .tmux/plugins/catppuccin:
+#   type: git-repo
+#   url: https://github.com/catppuccin/tmux
+#   refreshPeriod: 168h
