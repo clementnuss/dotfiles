@@ -23,10 +23,9 @@ require("lazy").setup({
     lazy = false,
     version = false, -- always use the latest git commit
   },
-  install = { colorscheme = { "tokyonight", "habamax" } },
   checker = {
     enabled = true, -- check for plugin updates periodically
-    notify = false, -- notify on update
+    notify = true, -- notify on update
   }, -- automatically check for plugin updates
   performance = {
     rtp = {
@@ -38,7 +37,7 @@ require("lazy").setup({
         -- "netrwPlugin",
         "tarPlugin",
         "tohtml",
-        -- "tutor",
+        "tutor",
         "zipPlugin",
       },
     },
