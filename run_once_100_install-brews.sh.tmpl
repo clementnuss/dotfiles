@@ -28,8 +28,10 @@ brew "sshuttle"
 brew "starship"
 brew "tmux"
 brew "yq"
+{{- if not (hasKey . "email") }}
 cask "wezterm"
 cask "rectangle"
 cask "jordanbaird-ice"
+{{- end -}}
 EOF
 
