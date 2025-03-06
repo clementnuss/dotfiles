@@ -1,6 +1,6 @@
 #!/bin/bash
 
-brew bundle --no-lock --file=/dev/stdin <<EOF
+brew bundle --file=/dev/stdin <<EOF
 brew "atuin"
 brew "bash" # tmux/extrakto needs a recent bash
 brew "bat"
@@ -24,7 +24,6 @@ brew "neovim"
 brew "page"
 brew "ripgrep"
 brew "sops"
-brew "sshuttle"
 brew "starship"
 brew "tmux"
 brew "yq"
@@ -32,6 +31,6 @@ brew "yq"
 cask "wezterm"
 cask "rectangle"
 cask "jordanbaird-ice"
-{{- end -}}
+{{- end }}
 EOF
 
