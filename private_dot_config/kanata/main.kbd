@@ -19,7 +19,7 @@
 (deftemplate charmod (char mod)
   (switch 
     ((key-timing 3 less-than 250)) $char break
-    () (tap-hold-release-timeout 100 400 $char $mod $char) break
+    () (tap-hold-release-timeout 200 500 $char $mod $char) break
   )
 )
 
@@ -32,4 +32,5 @@
   k (t! charmod k lmet)
   l (t! charmod l lalt)
   ; (t! charmod ; lctl)
+  IntlBackslash grv
 )
