@@ -5,15 +5,17 @@
 ;; - 250 represents the elapsed `time` since the key specified above was pressed and it should be adjusted to your typing speed.
 ;; - `tap-hold-release-timeout` triggers a modifier while held only if another key is pressed *and* released before the timeout, after which the expected repeat action for the key would trigger instead.
 (defcfg
-  process-unmapped-keys no
+  process-unmapped-keys yes
+  concurrent-tap-hold   yes
 )
 
 (defsrc
-   grv 1 2 3 4 5 6 7 8 9 0 - = bspc
-   tab q w e r t y u i o p [ ] \ ret
-  caps a s d f g h j k l ; '
-       z x c v b n m , . /      up
-               spc        left down right
+  esc    f1    f2    f3    f4    f5    f6    f7    f8    f9    f10   f11   f12
+  grv    1     2     3     4     5     6     7     8     9     0     -     =     bspc
+  tab    q     w     e     r     t     y     u     i     o     p     [     ]
+  caps   a     s     d     f     g     h     j     k     l     ;     '     \     ret
+  lsft < z     x     c     v     b     n     m     ,     .     /     rsft
+  fn     lctl  lalt  lmet              spc               rmet  ralt  ◀    ▲ ▼    ▶  
 )
 
 (deftemplate charmod (char mod)
@@ -33,4 +35,16 @@
   l (t! charmod l lalt)
   ; (t! charmod ; lctl)
   IntlBackslash grv
+  fn (tap-hold 250 250 fn (layer-toggle fn))
+)
+
+;; with > 1.8.0
+;;  _     🔅    🔆    mctl  sls   dtn   dnd   ◀◀    ▶⏸    ▶▶    🔇    🔉    🔊 
+(deflayer fn
+  _     🔅    🔆    _     _     _     _     ◀◀    ▶⏸    ▶▶    🔇    🔉    🔊 
+  _     _     _     _     _     _     _     _     _     _     _     _     _     del
+  _     _     _     _     lrld  _     _     _     _     _     _     _     _
+  _     _     _     _     _     _     _     _     _     _     _     _     _     _
+  _   _ _     _     _     _     _     _     _     _     _     _     _
+  _     _     _     _                 _                 _     _     ⤒    ⇞ ⇟    ⤓
 )
