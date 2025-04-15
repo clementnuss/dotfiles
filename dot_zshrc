@@ -55,8 +55,9 @@ KUBESESS_COMPLETION_FILE=$(brew --prefix)/share/zsh/site-functions/kubesess.sh
 [ -f $KUBESESS_COMPLETION_FILE ] && source $KUBESESS_COMPLETION_FILE
 
 
-function atuin_init() {
+function plugins_init() {
   eval "$(atuin init zsh)"
+  eval "$(zoxide init zsh)"
 }
-zvm_after_init_commands+=(atuin_init)
+zvm_after_init_commands+=(plugins_init)
 

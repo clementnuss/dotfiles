@@ -1,4 +1,4 @@
-agkozak/zsh-z
+# agkozak/zsh-z
 jeffreytse/zsh-vi-mode
 olets/zsh-abbr    kind:defer
 
