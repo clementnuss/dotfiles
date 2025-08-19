@@ -38,6 +38,7 @@
   k (t! charmod k lmet)
   l (t! charmod l lalt)
   ; (t! charmod ; lctl)
+  caps grv
   IntlBackslash grv
   fn (tap-hold 250 250 fn (layer-toggle fn))
 )
