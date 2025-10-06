@@ -19,7 +19,7 @@
   tab    q     w     e     r     t     y     u     i     o     p     [     ]
   caps   a     s     d     f     g     h     j     k     l     ;     '     \     ret
   lsft < z     x     c     v     b     n     m     ,     .     /     rsft
-  fn     lctl  lalt  lmet              spc               rmet  ralt  ◀    ▲ ▼    ▶  
+        lctl  lalt  lmet              spc               rmet  ralt  ◀    ▲ ▼    ▶  
 )
 
 (deftemplate charmod (char mod)
@@ -38,21 +38,6 @@
   k (t! charmod k lmet)
   l (t! charmod l lalt)
   ; (t! charmod ; lctl)
-  caps grv
-  IntlBackslash grv
-  fn (tap-hold 250 250 fn (layer-toggle fn))
-)
-
-
-;; with > 1.8.0
-;;  _     🔅    🔆    mctl  sls   dtn   dnd   ◀◀    ▶⏸    ▶▶    🔇    🔉    🔊 
-(deflayer fn
-  _     🔅    🔆    _     _     _     _     ◀◀    ▶⏸    ▶▶    🔇    🔉    🔊 
-  _     _     _     _     _     _     _     _     _     _     _     _     _     del
-  _     _     _     _     lrld  _     _     _     _     _     _     _     _
-  _     _     _     _     _     _     _     _     _     _     _     _     _     _
-  _   _ _     _     _     _     _     _     _     _     _     _     _
-  _     _     _     _                 _                 _     _     ⤒    ⇞ ⇟    ⤓
 )
 
 

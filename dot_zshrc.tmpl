@@ -10,6 +10,10 @@ if type brew &>/dev/null; then
   FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
 fi
 
+{{ if eq .chezmoi.os "linux" -}}
+export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/rbw/ssh-agent-socket"
+{{- end }}
+
 # set omz variables
 ZSH=$(antidote path ohmyzsh/ohmyzsh)
 ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/oh-my-zsh"
@@ -51,8 +55,10 @@ function klogin() {
   kubectl-login --login-methods YubiKey
 }
 
-KUBESESS_COMPLETION_FILE=$(brew --prefix)/share/zsh/site-functions/kubesess.sh
-[ -f $KUBESESS_COMPLETION_FILE ] && source $KUBESESS_COMPLETION_FILE
+if type brew &>/dev/null; then
+  KUBESESS_COMPLETION_FILE=$(brew --prefix)/share/zsh/site-functions/kubesess.sh
+  [ -f $KUBESESS_COMPLETION_FILE ] && source $KUBESESS_COMPLETION_FILE
+fi
 
 
 function plugins_init() {
