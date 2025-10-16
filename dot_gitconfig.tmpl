@@ -1,11 +1,7 @@
 [user]
 	name = Clément Nussbaumer
 	signingkey = A99C6A4E3C856DA9
-{{- if hasKey . "email" }}
 	email = {{ .email }}
-{{- else }}
-	email = clement@n8r.ch
-{{- end }}
 [commit]
 	gpgsign = true
 [pull]
@@ -37,11 +33,6 @@
     hunk-header-line-number-style = "#067a00"
     hunk-header-style = file line-number syntax
 
-{{- if hasKey . "email" }} ## work environment
-[url "https://github.com/"]
-        insteadOf = git@github.com:
-[credential "https://github.com"]
-	username = clementnuss
 [push]
 	autoSetupRemote = true
 [credential]
@@ -52,4 +43,10 @@
     process = git-lfs filter-process
     required = true
 
-{{- end -}}
+{{- if eq .profile "work" }}
+## work environment
+[url "https://github.com/"]
+        insteadOf = git@github.com:
+[credential "https://github.com"]
+	username = clementnuss
+{{- end }}

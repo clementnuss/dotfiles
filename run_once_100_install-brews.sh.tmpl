@@ -32,11 +32,6 @@ brew "tmux"
 brew "yazi"
 brew "yq"
 brew "zoxide"
-{{- if not (hasKey . "email") }}
-cask "wezterm"
-cask "rectangle"
-cask "jordanbaird-ice"
-{{- end }}
 EOF
 
 {{- end }}

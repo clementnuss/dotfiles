@@ -2,4 +2,5 @@
 .config/vim/plugin/
 .config/nvim/lazy-lock.json
 .config/nvim/sessions/
+scripts/
 README.md

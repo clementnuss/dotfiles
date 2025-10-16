@@ -1,6 +1,19 @@
 
 zstyle ':antidote:bundle' use-friendly-names 'yes'
 zstyle ':zsh-utils:plugins:history' use-xdg-basedirs 'no'
+
+zstyle ':completion:*' list-packed true           # Compact display
+zstyle ':completion:*' list-suffixes true         # Show suffixes when completing
+zstyle ':completion:*' squeeze-slashes true       # Squeeze multiple slashes to one
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'  # Case-insensitive matching
+zstyle ':completion:*' menu select                # Enable menu selection
+zstyle ':completion:*' special-dirs true          # Include . and .. in completions
+zstyle ':completion:*' verbose yes                # Verbose completions
+
+# Better file/directory completion
+zstyle ':completion:*' file-sort modification     # Sort by modification time
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}  # Colored completions
+
 source ${ZDOTDIR:-~}/.antidote/antidote.zsh
 
 # config home
@@ -10,7 +23,7 @@ if type brew &>/dev/null; then
   FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
 fi
 
-{{ if eq .chezmoi.os "linux" -}}
+{{ if eq .profile "personal" -}}
 export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/rbw/ssh-agent-socket"
 {{- end }}
 
