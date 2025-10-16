@@ -1,0 +1,115 @@
+{{- if and (eq .chezmoi.os "linux") (stat "/etc/arch-release") -}}
+#!/bin/bash
+# vim: ft=bash
+# run_onchange_install-packages.sh.tmpl
+# This script installs official and AUR packages
+# It runs whenever the content of this file changes
+
+set -euo pipefail
+
+# Color output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+log_info() {
+    echo -e "${GREEN}[INFO]${NC} $1"
+}
+
+log_warn() {
+    echo -e "${YELLOW}[WARN]${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Official packages from pacman repositories
+OFFICIAL_PACKAGES=(
+    atuin
+    chezmoi
+    claude-code
+    fluxcd
+    git-delta
+    go
+    gpg-tui
+    k9s
+    kubectl
+    nebula
+    npm
+    rbw
+    rclone
+    sops
+    talhelper
+    talosctl
+    tmux
+    wireguard-tools
+    zsh
+)
+
+# AUR packages (requires yay or paru)
+AUR_PACKAGES=(
+    betterbird-bin
+    bitwarden-bin
+    brave-bin
+    caligula-bin
+    gonzo
+    hyprmon-bin
+    kanata-bin
+    kind
+    rclone-mount-service
+    vial-appimage
+)
+
+# Detect AUR helper
+AUR_HELPER=""
+if command -v yay &> /dev/null; then
+    AUR_HELPER="yay"
+elif command -v paru &> /dev/null; then
+    AUR_HELPER="paru"
+else
+    log_warn "No AUR helper (yay or paru) found. AUR packages will be skipped."
+fi
+
+# Function to check if package is installed
+is_installed() {
+    pacman -Qi "$1" &> /dev/null
+}
+
+# Install official packages
+log_info "Checking official packages..."
+OFFICIAL_TO_INSTALL=()
+for pkg in "${OFFICIAL_PACKAGES[@]}"; do
+    if ! is_installed "$pkg"; then
+        OFFICIAL_TO_INSTALL+=("$pkg")
+    fi
+done
+
+if [[ ${#OFFICIAL_TO_INSTALL[@]} -gt 0 ]]; then
+    log_info "Installing ${#OFFICIAL_TO_INSTALL[@]} official packages..."
+    sudo pacman -S --needed --noconfirm "${OFFICIAL_TO_INSTALL[@]}"
+else
+    log_info "All official packages are already installed"
+fi
+
+# Install AUR packages
+if [[ -n "$AUR_HELPER" ]]; then
+    log_info "Checking AUR packages..."
+    AUR_TO_INSTALL=()
+    for pkg in "${AUR_PACKAGES[@]}"; do
+        if ! is_installed "$pkg"; then
+            AUR_TO_INSTALL+=("$pkg")
+        fi
+    done
+
+    if [[ ${#AUR_TO_INSTALL[@]} -gt 0 ]]; then
+        log_info "Installing ${#AUR_TO_INSTALL[@]} AUR packages with $AUR_HELPER..."
+        $AUR_HELPER -S --needed --noconfirm "${AUR_TO_INSTALL[@]}"
+    else
+        log_info "All AUR packages are already installed"
+    fi
+fi
+
+log_info "Package installation complete!"
+{{- end -}}

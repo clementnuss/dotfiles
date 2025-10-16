@@ -1,0 +1,13 @@
+{{- if and (eq .chezmoi.os "linux") (stat "/etc/arch-release") -}}
+[Unit]
+Description=Kanata keyboard remapper
+Documentation=https://github.com/jtroo/kanata
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/kanata --cfg {{ .chezmoi.homeDir }}/.config/kanata/main.kbd
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
+{{- end -}}
