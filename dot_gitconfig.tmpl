@@ -10,7 +10,11 @@
 [init]
 	defaultBranch = main
 [ghq]
+{{- if eq .profile "personal" }}
   root = ~/git
+{{- else}}
+  root = ~/repos
+{{- end }}
 
 [core]
     pager = delta
