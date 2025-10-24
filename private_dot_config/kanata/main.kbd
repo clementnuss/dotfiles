@@ -11,6 +11,11 @@
   macos-dev-names-exclude (
    "Halcyon Kyria rev4"
   )
+
+  linux-dev-names-exclude (
+    "splitkb.com Halcyon Kyria rev4"
+    "splitkb.com Halcyon Kyria rev4 Keyboard"
+  )
 )
 
 (defsrc
