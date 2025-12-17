@@ -1,22 +1,20 @@
-# agkozak/zsh-z
-jeffreytse/zsh-vi-mode
-olets/zsh-abbr    kind:defer
+getantidote/use-omz
 
-zsh-users/zsh-completions
+olets/zsh-abbr kind:defer
+
+zsh-users/zsh-completions path:src kind:fpath
 
 belak/zsh-utils path:editor
 belak/zsh-utils path:history
 belak/zsh-utils path:prompt
 belak/zsh-utils path:utility
-belak/zsh-utils path:completion
 
-ohmyzsh/ohmyzsh path:lib
+# OMZ plugins - use-omz will lazy-load lib components as needed
 ohmyzsh/ohmyzsh path:plugins/colored-man-pages
-ohmyzsh/ohmyzsh path:plugins/docker
-ohmyzsh/ohmyzsh path:plugins/kubectl
+ohmyzsh/ohmyzsh path:plugins/docker kind:defer
+ohmyzsh/ohmyzsh path:plugins/kubectl kind:defer
 
 # popular fish-like plugins
-# mattmc3/zfunctions
 zsh-users/zsh-autosuggestions
 zdharma-continuum/fast-syntax-highlighting kind:defer
 zsh-users/zsh-history-substring-search

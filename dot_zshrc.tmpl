@@ -1,84 +1,35 @@
+# ============================================================================
+# ZSH Configuration
+# Optimized for fast startup (<100ms target)
+# ============================================================================
 
-zstyle ':antidote:bundle' use-friendly-names 'yes'
-zstyle ':zsh-utils:plugins:history' use-xdg-basedirs 'no'
-
-zstyle ':completion:*' list-packed true           # Compact display
-zstyle ':completion:*' list-suffixes true         # Show suffixes when completing
-zstyle ':completion:*' squeeze-slashes true       # Squeeze multiple slashes to one
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'  # Case-insensitive matching
-zstyle ':completion:*' menu select                # Enable menu selection
-zstyle ':completion:*' special-dirs true          # Include . and .. in completions
-zstyle ':completion:*' verbose yes                # Verbose completions
-
-# Better file/directory completion
-zstyle ':completion:*' file-sort modification     # Sort by modification time
-zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}  # Colored completions
-
-source ${ZDOTDIR:-~}/.antidote/antidote.zsh
-
-# config home
+# ----------------------------------------------------------------------------
+# Environment Setup
+# ----------------------------------------------------------------------------
 export XDG_CONFIG_HOME=~/.config
-
-if type brew &>/dev/null; then
-  FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
-fi
+export EDITOR=nvim
 
 {{ if eq .profile "personal" -}}
 export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/rbw/ssh-agent-socket"
 {{- end }}
 
-# set omz variables
-ZSH=$(antidote path ohmyzsh/ohmyzsh)
-ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/oh-my-zsh"
-[[ -d $ZSH_CACHE_DIR ]] || mkdir -p $ZSH_CACHE_DIR
-[[ -d $ZSH_CACHE_DIR/completions ]] || mkdir -p $ZSH_CACHE_DIR/completions
-antidote load
-
-eval "$(starship init zsh)"
-
-function zvm_vi_yank() {
-	zvm_yank
-	echo ${CUTBUFFER} | pbcopy
-	zvm_exit_visual_mode
-}
-
-# Define an init function and append to zvm_after_init_commands
-function fzf_init() {
-  [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-}
-zvm_after_init_commands+=(fzf_init)
-
-export CONFIG_DIR="$HOME/.config/lazygit"
-export K9SCONFIG=~/.config/k9s/
-
-# optionally: local .zshrc
-[ -f ~/.zshrc-local ] && source ~/.zshrc-local
-
-# Go path:
-path+=("$(go env GOPATH)/bin")
-path+=("$HOME/.krew/bin")
-
-export PATH
-export EDITOR=nvim
-
-# kubernetes helper functions
-function klogin() {
-  unset KUBECONFIG
-  rm -rf ~/.kube/kubesess/
-  kubectl-login --login-methods YubiKey
-}
-
-if type brew &>/dev/null; then
-  KUBESESS_COMPLETION_FILE=$(brew --prefix)/share/zsh/site-functions/kubesess.sh
-  [ -f $KUBESESS_COMPLETION_FILE ] && source $KUBESESS_COMPLETION_FILE
+# ----------------------------------------------------------------------------
+# Path Configuration
+# ----------------------------------------------------------------------------
+# Hard-code brew prefix (calling 'brew --prefix' takes ~70ms)
+if [[ -d "/opt/homebrew" ]]; then
+  BREW_PREFIX="/opt/homebrew"
+elif [[ -d "/usr/local" ]]; then
+  BREW_PREFIX="/usr/local"
 fi
 
+if [[ -n "$BREW_PREFIX" ]]; then
+  FPATH="$BREW_PREFIX/share/zsh/site-functions:${FPATH}"
+fi
 
-function plugins_init() {
-  eval "$(atuin init zsh)"
-  eval "$(zoxide init zsh)"
-}
-zvm_after_init_commands+=(plugins_init)
+# Go and Kubernetes paths
+path+=("${GOPATH:-$HOME/go}/bin")
+path+=("$HOME/.krew/bin")
 
 # pnpm
 export PNPM_HOME="${HOME}/.local/share/pnpm"
@@ -86,4 +37,130 @@ case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
-# pnpm end
+
+export PATH
+
+# ----------------------------------------------------------------------------
+# Completion Configuration
+# ----------------------------------------------------------------------------
+# Antidote plugin manager settings
+zstyle ':antidote:bundle' use-friendly-names 'yes'
+zstyle ':zsh-utils:plugins:history' use-xdg-basedirs 'no'
+
+# Completion options
+setopt COMPLETE_IN_WORD    # Complete from both ends of a word
+setopt ALWAYS_TO_END       # Move cursor to the end of a completed word
+setopt AUTO_MENU           # Show completion menu on a successive tab press
+setopt AUTO_LIST           # Automatically list choices on ambiguous completion
+setopt AUTO_PARAM_SLASH    # If completed parameter is a directory, add a trailing slash
+setopt EXTENDED_GLOB       # Needed for file modification glob modifiers with compinit
+unsetopt MENU_COMPLETE     # Do not autoselect the first completion entry
+unsetopt FLOW_CONTROL      # Disable start/stop characters in shell editor
+
+# Completion styles
+zstyle ':completion:*' list-packed true
+zstyle ':completion:*' list-suffixes true
+zstyle ':completion:*' squeeze-slashes true
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
+zstyle ':completion:*' menu select
+zstyle ':completion:*' special-dirs true
+zstyle ':completion:*' verbose yes
+zstyle ':completion:*' file-sort modification
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+zstyle ':completion::complete:*' use-cache on
+zstyle ':completion::complete:*' cache-path "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/compcache"
+
+# ----------------------------------------------------------------------------
+# Plugin Loading
+# ----------------------------------------------------------------------------
+source ${ZDOTDIR:-~}/.antidote/antidote.zsh
+
+# OMZ cache directory
+ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/oh-my-zsh"
+[[ -d $ZSH_CACHE_DIR ]] || mkdir -p $ZSH_CACHE_DIR
+[[ -d $ZSH_CACHE_DIR/completions ]] || mkdir -p $ZSH_CACHE_DIR/completions
+
+antidote load
+
+# ----------------------------------------------------------------------------
+# Prompt Configuration
+# ----------------------------------------------------------------------------
+# Cache starship init (calling starship init every time adds ~20ms)
+STARSHIP_CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/starship_init.zsh"
+if [[ ! -f "$STARSHIP_CACHE" ]] || [[ "${ZDOTDIR:-$HOME}/.zshrc" -nt "$STARSHIP_CACHE" ]]; then
+  starship init zsh > "$STARSHIP_CACHE"
+fi
+source "$STARSHIP_CACHE"
+
+# ----------------------------------------------------------------------------
+# Vi Mode Configuration
+# ----------------------------------------------------------------------------
+# Use native zsh vi mode (zsh-vi-mode plugin is slow)
+bindkey -v
+
+# Restore some useful Emacs-style keybindings in insert mode
+bindkey '^A' beginning-of-line      # Ctrl+A - go to beginning
+bindkey '^E' end-of-line            # Ctrl+E - go to end
+bindkey '^F' forward-char           # Ctrl+F - move forward
+bindkey '^B' backward-char          # Ctrl+B - move backward
+bindkey '^P' up-line-or-history     # Ctrl+P - previous command
+bindkey '^N' down-line-or-history   # Ctrl+N - next command
+bindkey '^K' kill-line              # Ctrl+K - kill to end of line
+bindkey '^U' backward-kill-line     # Ctrl+U - kill to beginning
+bindkey '^W' backward-kill-word     # Ctrl+W - kill word backward
+bindkey '^R' history-incremental-search-backward  # Ctrl+R - search history
+
+# Custom yank to system clipboard (cross-platform)
+function vi-yank-clipboard {
+  zle vi-yank
+  if [[ "$OSTYPE" == darwin* ]]; then
+    echo -n "$CUTBUFFER" | pbcopy
+  elif command -v wl-copy &>/dev/null; then
+    echo -n "$CUTBUFFER" | wl-copy
+  elif command -v xclip &>/dev/null; then
+    echo -n "$CUTBUFFER" | xclip -selection clipboard
+  elif command -v xsel &>/dev/null; then
+    echo -n "$CUTBUFFER" | xsel --clipboard --input
+  fi
+}
+zle -N vi-yank-clipboard
+bindkey -M vicmd 'y' vi-yank-clipboard
+bindkey -M visual 'y' vi-yank-clipboard
+
+# ----------------------------------------------------------------------------
+# Additional Tool Integrations
+# ----------------------------------------------------------------------------
+# FZF fuzzy finder
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# Kubernetes session manager completion
+if [[ -n "$BREW_PREFIX" ]]; then
+  KUBESESS_COMPLETION_FILE="$BREW_PREFIX/share/zsh/site-functions/kubesess.sh"
+  [ -f "$KUBESESS_COMPLETION_FILE" ] && source "$KUBESESS_COMPLETION_FILE"
+fi
+
+# Deferred loading (non-blocking)
+zsh-defer eval "$(atuin init zsh)"
+zsh-defer eval "$(zoxide init zsh)"
+
+# ----------------------------------------------------------------------------
+# Application Configuration
+# ----------------------------------------------------------------------------
+export CONFIG_DIR="$HOME/.config/lazygit"
+export K9SCONFIG=~/.config/k9s/
+
+# ----------------------------------------------------------------------------
+# Custom Functions
+# ----------------------------------------------------------------------------
+# Kubernetes login helper
+function klogin() {
+  unset KUBECONFIG
+  rm -rf ~/.kube/kubesess/
+  kubectl-login --login-methods YubiKey
+}
+
+# ----------------------------------------------------------------------------
+# Local Overrides
+# ----------------------------------------------------------------------------
+# Load local customizations if they exist
+[ -f ~/.zshrc-local ] && source ~/.zshrc-local
