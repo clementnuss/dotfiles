@@ -1,22 +1,11 @@
 
 palette = "catppuccin_latte"
-right_format = """$kubernetes"""
-
-[kubernetes]
-format = '[$symbol$context \($namespace\)]($style) '
-style = "mauve"
-disabled = true
-symbol = "⛵ "
-
-[hostname]
-ssh_only = true
-# format = "on [$hostname](#1a7f37) "
 
 [nodejs]
 disabled = true
 
-[golang]
-disabled = true
+# [golang]
+# disabled = true
 
 [time]
 disabled = false
@@ -24,12 +13,12 @@ format = '🕙[ $time ](text) '
 
 [directory]
 style = "peach"
-
+repo_root_style = "bold peach"
+repo_root_format = "[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style) "
+truncation_length = 2
+truncation_symbol = "…/"
 
 [status]
-symbol = "🔴"
-format = '[\[$symbol $common_meaning$signal_name$maybe_int\]]($style) '
-map_symbol = true
 disabled = false
 
 [palettes.catppuccin_latte]
