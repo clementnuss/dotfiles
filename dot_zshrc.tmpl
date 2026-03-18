@@ -144,6 +144,13 @@ zsh-defer eval "$(atuin init zsh)"
 zsh-defer eval "$(zoxide init zsh)"
 
 # ----------------------------------------------------------------------------
+# Aliases
+# ----------------------------------------------------------------------------
+{{ if and (eq .chezmoi.os "linux") (stat "/etc/arch-release") -}}
+alias task='go-task'
+{{- end }}
+
+# ----------------------------------------------------------------------------
 # Application Configuration
 # ----------------------------------------------------------------------------
 export CONFIG_DIR="$HOME/.config/lazygit"
