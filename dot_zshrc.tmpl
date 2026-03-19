@@ -133,15 +133,10 @@ bindkey -M visual 'y' vi-yank-clipboard
 # FZF fuzzy finder
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-# Kubernetes session manager completion
-if [[ -n "$BREW_PREFIX" ]]; then
-  KUBESESS_COMPLETION_FILE="$BREW_PREFIX/share/zsh/site-functions/kubesess.sh"
-  [ -f "$KUBESESS_COMPLETION_FILE" ] && source "$KUBESESS_COMPLETION_FILE"
-fi
-
 # Deferred loading (non-blocking)
 zsh-defer eval "$(atuin init zsh)"
 zsh-defer eval "$(zoxide init zsh)"
+command -v kubesess &>/dev/null && zsh-defer -c 'eval "$(kubesess init zsh)"'
 
 # ----------------------------------------------------------------------------
 # Aliases
