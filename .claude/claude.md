@@ -1,49 +1,65 @@
-# Dotfiles Repository Context
+# Dotfiles Repository (chezmoi)
 
-This is a dotfiles repository managed by **chezmoi** for configuring an Arch Linux system (omarchy distribution).
+Personal dotfiles managed by [chezmoi](https://www.chezmoi.io/) targeting **Arch Linux (omarchy)** and **macOS**.
 
-## Repository Structure
+## Chezmoi Conventions
 
-- `private_dot_config/` - Configuration files managed by chezmoi (applied to `~/.config/`)
-  - `helix/` - Helix editor configuration
-  - `k9s/` - Kubernetes CLI configuration
-  - `kanata/` - Kanata keyboard remapper configuration
-  - `lazygit/` - Lazygit configuration
-  - `nvim/` - Neovim configuration
-  - `wezterm/` - WezTerm terminal configuration
-- `scripts/` - Setup and automation scripts (not necessarily applied by chezmoi)
-  - `setup-kanata.sh` - Automated Kanata Linux setup script
+- **Naming**: Files use chezmoi prefixes — `dot_` (dotfiles), `private_dot_` (private dirs), `run_once_`/`run_onchange_` (scripts), `.tmpl` (Go templates).
+- **Templates**: `.tmpl` files use Go text/template syntax with `{{ .chezmoi.os }}`, `{{ .profile }}` (`personal`/`work`), and `{{ .email }}` as the main data variables (see `.chezmoi.yaml.tmpl`).
+- **External deps**: Managed in `.chezmoiexternal.yaml` (currently: tmux TPM).
+- **Ignored paths**: See `.chezmoiignore` — `scripts/` dir is NOT applied by chezmoi (it's manual-run tooling).
+- Apply changes: `chezmoi apply`. Preview: `chezmoi diff`. Add file: `chezmoi add <path>`.
 
-## Working with Setup Scripts
+## Repository Layout
 
-Setup scripts in `scripts/` are meant to automate system configuration tasks that don't fit into the typical chezmoi workflow. These scripts:
+```
+.
+├── private_dot_config/       -> ~/.config/
+│   ├── ghostty/              # Ghostty terminal config
+│   ├── helix/                # Helix editor
+│   ├── hypr/                 # Hyprland WM (bindings, hypridle, lid-handler)
+│   ├── k9s/                  # Kubernetes TUI (catppuccin latte skin)
+│   ├── kanata/               # Keyboard remapper (home-row mods)
+│   ├── lazygit/              # Lazygit
+│   ├── nvim/                 # Neovim (LazyVim-based)
+│   ├── starship.toml         # Starship prompt (catppuccin latte)
+│   ├── systemd/user/         # User systemd services (kanata)
+│   └── wezterm/              # WezTerm terminal (light themes)
+├── scripts/                  # Manual setup scripts (not chezmoi-managed)
+├── dot_zshrc.tmpl            # Main ZSH config (antidote, vi-mode, deferred loads)
+├── dot_gitconfig.tmpl        # Git config (delta pager, GPG signing)
+├── dot_tmux.conf             # Tmux (C-Space prefix, catppuccin, tilish)
+├── dot_zsh_plugins.txt       # Antidote plugin list
+├── run_once_100_*            # macOS: brew bundle
+├── run_once_103_*            # ZSH antidote bootstrap
+├── run_once_200_*            # Neovim packer setup
+├── run_once_201_*            # FZF ZSH integration
+└── run_onchange_install-*    # Arch: pacman + AUR package installation
+```
 
-- Should be idempotent (safe to run multiple times)
-- Should provide clear status messages and warnings
-- Should handle errors gracefully with `set -euo pipefail`
-- Should be executable (`chmod +x`)
-- May require sudo/root privileges for system configuration
+## Key Design Decisions
 
-### Example: Kanata Setup Script
+- **Theme**: Catppuccin Latte (light theme) throughout — starship, tmux, k9s, wezterm, nvim.
+- **Shell**: ZSH with antidote plugin manager. Startup optimized for <100ms (cached starship init, deferred evals for atuin/zoxide/kubesess, hardcoded brew prefix).
+- **Keyboard**: Kanata home-row mods (a/s/d/f = ctrl/alt/meta/shift, mirrored on j/k/l/;). Excludes splitkb Kyria.
+- **Editor**: Neovim via LazyVim distribution.
+- **Terminal**: Ghostty (default), WezTerm also configured.
+- **Tmux prefix**: `C-Space`. Uses tilish for tiling, TPM for plugins.
+- **Git**: GPG-signed commits, delta as pager, ghq for repo management (`~/git` personal, `~/repos` work).
+- **Packages**: Arch packages via pacman + yay/paru AUR helper. macOS via Homebrew.
+- **Profiles**: `personal` vs `work` — affects SSH agent (rbw), git URLs (HTTPS rewrite for work), ghq root.
 
-The `setup-kanata.sh` script automates the Linux setup for Kanata keyboard remapper:
-- Creates system groups and adds user to them
-- Configures udev rules
-- Loads kernel modules
-- Creates and enables systemd user service
+## Script Standards
 
-Run with: `sudo ./scripts/setup-kanata.sh`
+Scripts in `scripts/` should be:
+- Idempotent (safe to re-run)
+- Use `set -euo pipefail`
+- Provide colored status messages
+- Handle sudo requirements explicitly
 
-## Chezmoi Commands
+## Editing Guidelines
 
-Common chezmoi commands:
-- `chezmoi apply` - Apply configuration changes to the system
-- `chezmoi edit <file>` - Edit a managed file
-- `chezmoi add <file>` - Add a new file to be managed
-- `chezmoi diff` - See what would change
-
-## Notes
-
-- This is an active setup for a new laptop migration
-- Configuration is tailored for Arch Linux (omarchy)
-- Group membership changes require logout/login to take effect
+- When modifying `.tmpl` files, preserve Go template syntax and conditionals.
+- Test template rendering with `chezmoi cat <target-path>` to verify output.
+- Package additions go in `run_onchange_install-packages.sh.tmpl` (Arch) or `run_once_100_install-brews.sh.tmpl` (macOS).
+- New config dirs under `private_dot_config/` should use chezmoi naming conventions.
