@@ -154,6 +154,48 @@ export K9SCONFIG=~/.config/k9s/
 # ----------------------------------------------------------------------------
 # Custom Functions
 # ----------------------------------------------------------------------------
+{{ if eq .profile "personal" -}}
+# Credentials loader (dev-docs/credentials/*.env via rbw)
+_CREDS_BASE="$HOME/git/github.com/clementnuss/dev-docs/credentials"
+
+creds() {
+  # If creds already loaded, unset them first
+  if [[ -n "$_CREDS_LOADED" ]]; then
+    echo "unloading: $_CREDS_LOADED"
+    for var in ${(s/:/)_CREDS_VARS}; do
+      unset "$var"
+    done
+    unset _CREDS_LOADED _CREDS_VARS
+  fi
+
+  # Pick file (allow optional arg to filter without fzf)
+  local file
+  if [[ -n "$1" ]]; then
+    file=$(ls "$_CREDS_BASE"/*.env 2>/dev/null | xargs -n1 basename | grep -i "$1" | head -1)
+    [[ -z "$file" ]] && echo "no match for: $1" && return 1
+  else
+    file=$(ls "$_CREDS_BASE"/*.env 2>/dev/null | xargs -n1 basename | fzf --prompt="credentials> ")
+  fi
+  [[ -z "$file" ]] && echo "no credentials selected" && return 1
+
+  # Snapshot env, source, diff to track what was added
+  local before after
+  before=$(env | cut -d= -f1 | sort)
+  source "$_CREDS_BASE/$file"
+  after=$(env | cut -d= -f1 | sort)
+
+  # Store which vars were added
+  local new_vars=$(comm -13 <(echo "$before") <(echo "$after") | tr '\n' ':')
+  export _CREDS_LOADED="$file"
+  export _CREDS_VARS="$new_vars"
+
+  # Show info comment from the env file
+  local info=$(grep '^#' "$_CREDS_BASE/$file" | head -1 | sed 's/^# *//')
+  echo "loaded: $file"
+  [[ -n "$info" ]] && echo "  -> $info"
+}
+{{- end }}
+
 # Kubernetes login helper
 function klogin() {
   unset KUBECONFIG
