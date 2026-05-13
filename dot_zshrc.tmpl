@@ -3,6 +3,8 @@
 # Optimized for fast startup (<100ms target)
 # ============================================================================
 
+zmodload zsh/zprof
+
 # ----------------------------------------------------------------------------
 # Environment Setup
 # ----------------------------------------------------------------------------
@@ -80,6 +82,15 @@ ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/oh-my-zsh"
 [[ -d $ZSH_CACHE_DIR ]] || mkdir -p $ZSH_CACHE_DIR
 [[ -d $ZSH_CACHE_DIR/completions ]] || mkdir -p $ZSH_CACHE_DIR/completions
 
+
+ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
+{{ if eq .chezmoi.os "darwin" -}}
+# Sync mode: zpty-based async averages ~375ms/call on macOS, worse than sync
+# History-only: completion strategy invokes the full completion engine per keystroke
+ZSH_AUTOSUGGEST_STRATEGY=(history)
+unset ZSH_AUTOSUGGEST_USE_ASYNC
+{{- end }}
+
 antidote load
 
 # ----------------------------------------------------------------------------
@@ -137,6 +148,10 @@ bindkey -M visual 'y' vi-yank-clipboard
 zsh-defer eval "$(atuin init zsh)"
 zsh-defer eval "$(zoxide init zsh)"
 command -v kubesess &>/dev/null && zsh-defer -c 'eval "$(kubesess init zsh)"'
+{{ if eq .chezmoi.os "darwin" -}}
+# Re-apply after deferred tools (atuin appends its own strategy)
+zsh-defer -c 'ZSH_AUTOSUGGEST_STRATEGY=(history); unset ZSH_AUTOSUGGEST_USE_ASYNC'
+{{- end }}
 
 # ----------------------------------------------------------------------------
 # Aliases

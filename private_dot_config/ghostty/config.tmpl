@@ -1,10 +1,7 @@
-# Dynamic theme colors
-config-file = ?"~/.config/omarchy/current/theme/ghostty.conf"
-
 # Font
 font-family = "JetBrainsMono Nerd Font"
 font-style = Regular
-font-size = 9
+font-size = 11
 
 # Window
 window-padding-x = 14
@@ -12,7 +9,7 @@ window-padding-y = 14
 confirm-close-surface=false
 resize-overlay = never
 
-# Cursor stlying
+# Cursor styling
 cursor-style = "block"
 cursor-style-blink = false
 shell-integration-features = no-cursor
@@ -26,8 +23,21 @@ keybind = super+control+shift+alt+arrow_up=resize_split:up,100
 keybind = super+control+shift+alt+arrow_left=resize_split:left,100
 keybind = super+control+shift+alt+arrow_right=resize_split:right,100
 
+# Quick terminal (quake-style dropdown)
+keybind = global:cmd+backquote=toggle_quick_terminal
+quick-terminal-position = bottom
+quick-terminal-size = 35%
+
 # Slowdown mouse scrolling
 mouse-scroll-multiplier = 0.95
 
+{{- if eq .chezmoi.os "darwin" }}
+# Theme
+theme = Catppuccin Latte
+{{- else }}
+# Dynamic theme colors (Omarchy)
+config-file = ?"~/.config/omarchy/current/theme/ghostty.conf"
+
 # Fix general slowness on hyprland (https://github.com/ghostty-org/ghostty/discussions/3224)
 async-backend = epoll
+{{- end }}

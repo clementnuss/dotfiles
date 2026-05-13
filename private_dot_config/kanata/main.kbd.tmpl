@@ -8,10 +8,6 @@
   process-unmapped-keys yes
   concurrent-tap-hold   yes
 
-  macos-dev-names-exclude (
-   "Halcyon Kyria rev4"
-  )
-
   linux-dev-names-exclude (
     "splitkb.com Halcyon Kyria rev4"
     "splitkb.com Halcyon Kyria rev4 Keyboard"
@@ -24,7 +20,7 @@
   tab    q     w     e     r     t     y     u     i     o     p     [     ]
   caps   a     s     d     f     g     h     j     k     l     ;     '     \     ret
   lsft < z     x     c     v     b     n     m     ,     .     /     rsft
-        lctl  lalt  lmet              spc               rmet  ralt  ◀    ▲ ▼    ▶  
+        lctl  lalt  lmet              spc               rmet  ralt  ◀    ▲ ▼    ▶
 )
 
 (deftemplate charmod (char mod)
@@ -34,6 +30,13 @@
   )
 )
 
+{{- if eq .chezmoi.os "darwin" }}
+;; Default layer on macOS — split keyboard with compose key, no home-row mods.
+(deflayermap (split)
+  caps (one-shot-release 3000 (layer-while-held compose1))
+)
+
+{{- end }}
 (deflayermap (main)
   a (t! charmod a lctl)
   s (t! charmod s lalt)
@@ -43,6 +46,7 @@
   k (t! charmod k lmet)
   l (t! charmod l lalt)
   ; (t! charmod ; lctl)
+{{- if eq .chezmoi.os "darwin" }}
+  caps (one-shot-release 3000 (layer-while-held compose1))
+{{- end }}
 )
-
-

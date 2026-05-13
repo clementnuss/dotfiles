@@ -1,0 +1,160 @@
+;; Compose key layers for macOS.
+;; Trigger: CapsLock (tap) → compose1 → compose2-X → unicode output.
+;;
+;; Sequences follow standard XCompose conventions (as used by Omarchy):
+;;   caps ' a → á     caps " a → ä     caps ` a → à     caps ~ a → ã
+;;   caps , c → ç
+;;   caps a e → æ     caps o e → œ     caps o / → ø
+;;   caps s s → ß     caps n n → ñ
+;;   caps e = → €     caps - - → —     caps - . → –
+;;   caps / = → ≠     caps / / → ÷     caps / o → °
+;;   caps = = → ≡     caps = , → ≤     caps = . → ≥
+;;   caps m s → 😄    caps m h → ❤️    caps space space → —
+
+;;; ─── compose1: first-key layer ───────────────────────────────────────────
+
+(deflayermap (compose1)
+  ;; diacritic prefixes — fork on shift: no shift = acute/grave, shift = umlaut/tilde
+  ;; caps → ' a = á  |  caps → shift+' a = ä  (3 separate taps each)
+  '   (fork (one-shot 2000 (layer-while-held compose2-acute)) (one-shot 2000 (layer-while-held compose2-umlaut)) (lsft rsft))
+  grv (fork (one-shot 2000 (layer-while-held compose2-grave)) (one-shot 2000 (layer-while-held compose2-tilde)) (lsft rsft))
+  ,   (one-shot 2000 (layer-while-held compose2-cedilla))
+
+  ;; letter pairs — one-shot so you tap once then type the letter
+  a   (one-shot 2000 (layer-while-held compose2-a))
+  o   (one-shot 2000 (layer-while-held compose2-o))
+  e   (one-shot 2000 (layer-while-held compose2-e))
+  s   (one-shot 2000 (layer-while-held compose2-s))
+  n   (one-shot 2000 (layer-while-held compose2-n))
+
+  ;; symbol prefixes
+  -   (one-shot 2000 (layer-while-held compose2-dash))
+  /   (one-shot 2000 (layer-while-held compose2-slash))
+  =   (one-shot 2000 (layer-while-held compose2-eq))
+  m   (one-shot 2000 (layer-while-held compose2-emoji))
+  spc (one-shot 2000 (layer-while-held compose2-space))
+)
+
+;;; ─── compose2 sublayers ──────────────────────────────────────────────────
+
+;; Acute accent:  ' + letter
+(deflayermap (compose2-acute)
+  a (unicode á)
+  e (unicode é)
+  i (unicode í)
+  o (unicode ó)
+  u (unicode ú)
+  y (unicode ý)
+)
+
+;; Grave accent:  ` + letter
+(deflayermap (compose2-grave)
+  a (unicode à)
+  e (unicode è)
+  i (unicode ì)
+  o (unicode ò)
+  u (unicode ù)
+)
+
+;; Umlaut/diaeresis:  '' + letter  (double-tap ')
+(deflayermap (compose2-umlaut)
+  a (unicode ä)
+  e (unicode ë)
+  i (unicode ï)
+  o (unicode ö)
+  u (unicode ü)
+  y (unicode ÿ)
+)
+
+;; Tilde:  `` + letter  (double-tap `)
+(deflayermap (compose2-tilde)
+  a (unicode ã)
+  n (unicode ñ)
+  o (unicode õ)
+)
+
+;; Cedilla:  , + letter
+(deflayermap (compose2-cedilla)
+  c (unicode ç)
+  s (unicode ş)
+)
+
+;; a combos:  a + e → æ,  a + a → ā
+(deflayermap (compose2-a)
+  e (unicode æ)
+  a (unicode ā)
+)
+
+;; o combos:  o + e → œ,  o + / → ø
+(deflayermap (compose2-o)
+  e (unicode œ)
+  / (unicode ø)
+)
+
+;; e combos:  e + = → €
+(deflayermap (compose2-e)
+  = (unicode €)
+)
+
+;; s combos:  s + s → ß
+(deflayermap (compose2-s)
+  s (unicode ß)
+)
+
+;; n combos:  n + n → ñ
+(deflayermap (compose2-n)
+  n (unicode ñ)
+)
+
+;; Dash/en-dash/em-dash:  - + - → —,  - + . → –
+(deflayermap (compose2-dash)
+  - (unicode —)
+  . (unicode –)
+)
+
+;; Slash combos:  / + = → ≠,  / + / → ÷,  / + o → °,  / + 2 → ½
+(deflayermap (compose2-slash)
+  = (unicode ≠)
+  / (unicode ÷)
+  o (unicode °)
+  2 (unicode ½)
+)
+
+;; Equals combos:  = + = → ≡,  = + , → ≤,  = + . → ≥
+(deflayermap (compose2-eq)
+  = (unicode ≡)
+  , (unicode ≤)
+  . (unicode ≥)
+)
+
+;; Emoji (Omarchy-inspired):  m + key
+(deflayermap (compose2-emoji)
+  s (unicode 😄)
+  c (unicode 😂)
+  l (unicode 😍)
+  v (unicode ✌)
+  h (unicode ❤)
+  y (unicode 👍)
+  n (unicode 👎)
+  f (unicode 🖕)
+  w (unicode 🤞)
+  r (unicode 🤘)
+  k (unicode 😘)
+  e (unicode 🙄)
+  d (unicode 🤤)
+  m (unicode 💰)
+  x (unicode 🎉)
+  1 (unicode 💯)
+  t (unicode 🥂)
+  p (unicode 🙏)
+  i (unicode 😉)
+  o (unicode 👌)
+  g (unicode 👋)
+  a (unicode 💪)
+  b (unicode 🤯)
+)
+
+;; Space combos:  space + space → —
+(deflayermap (compose2-space)
+  spc (unicode —)
+)
