@@ -2,8 +2,8 @@
 ;; Trigger: CapsLock (tap) → compose1 → compose2-X → unicode output.
 ;;
 ;; Sequences follow standard XCompose conventions (as used by Omarchy):
-;;   caps ' a → á     caps ` a → à     caps " a → ä
-;;   caps ~ a → ã     caps , c → ç
+;;   caps ' a → á     caps " a → ä     caps ` a → à     caps ~ a → ã
+;;   caps , c → ç
 ;;   caps a e → æ     caps o e → œ     caps o / → ø
 ;;   caps s s → ß     caps n n → ñ
 ;;   caps e = → €     caps - - → —     caps - . → –
@@ -14,14 +14,13 @@
 ;;; ─── compose1: first-key layer ───────────────────────────────────────────
 
 (deflayermap (compose1)
-  ;; diacritic prefixes
-  '   (one-shot 2000 (layer-while-held compose2-acute))
-  grv (one-shot 2000 (layer-while-held compose2-grave))
-  "   (one-shot 2000 (layer-while-held compose2-umlaut))
-  ~   (one-shot 2000 (layer-while-held compose2-tilde))
+  ;; diacritic prefixes — fork on shift: no shift = acute/grave, shift = umlaut/tilde
+  ;; caps → ' a = á  |  caps → shift+' a = ä  (3 separate taps each)
+  '   (fork (one-shot 2000 (layer-while-held compose2-acute)) (one-shot 2000 (layer-while-held compose2-umlaut)) (lsft rsft))
+  grv (fork (one-shot 2000 (layer-while-held compose2-grave)) (one-shot 2000 (layer-while-held compose2-tilde)) (lsft rsft))
   ,   (one-shot 2000 (layer-while-held compose2-cedilla))
 
-  ;; letter pairs
+  ;; letter pairs — one-shot so you tap once then type the letter
   a   (one-shot 2000 (layer-while-held compose2-a))
   o   (one-shot 2000 (layer-while-held compose2-o))
   e   (one-shot 2000 (layer-while-held compose2-e))
@@ -33,7 +32,7 @@
   /   (one-shot 2000 (layer-while-held compose2-slash))
   =   (one-shot 2000 (layer-while-held compose2-eq))
   m   (one-shot 2000 (layer-while-held compose2-emoji))
-  spc (one-shot 2000 (layer-while-held compose2-emoji))
+  spc (one-shot 2000 (layer-while-held compose2-space))
 )
 
 ;;; ─── compose2 sublayers ──────────────────────────────────────────────────
@@ -57,7 +56,7 @@
   u (unicode ù)
 )
 
-;; Umlaut/diaeresis:  " + letter
+;; Umlaut/diaeresis:  '' + letter  (double-tap ')
 (deflayermap (compose2-umlaut)
   a (unicode ä)
   e (unicode ë)
@@ -67,7 +66,7 @@
   y (unicode ÿ)
 )
 
-;; Tilde:  ~ + letter
+;; Tilde:  `` + letter  (double-tap `)
 (deflayermap (compose2-tilde)
   a (unicode ã)
   n (unicode ñ)
