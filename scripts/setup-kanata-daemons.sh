@@ -45,6 +45,8 @@ generate_kanata_plist() {
         <string>/opt/homebrew/bin/kanata</string>
         <string>-c</string>
         <string>$REAL_HOME/.config/kanata/kanata.kbd</string>
+        <string>-p</string>
+        <string>5829</string>
     </array>
 
     <key>RunAtLoad</key>
