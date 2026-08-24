@@ -17,7 +17,6 @@ Personal dotfiles managed by [chezmoi](https://www.chezmoi.io/) targeting **Arch
 ├── private_dot_config/       -> ~/.config/
 │   ├── ghostty/              # Ghostty terminal config
 │   ├── helix/                # Helix editor
-│   ├── hypr/                 # Hyprland WM (bindings, hypridle, lid-handler)
 │   ├── k9s/                  # Kubernetes TUI (catppuccin latte skin)
 │   ├── kanata/               # Keyboard remapper (home-row mods)
 │   ├── lazygit/              # Lazygit

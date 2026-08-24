@@ -1,0 +1,158 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Regenerate k9s's skin from the active Omarchy theme.
+# Called by omarchy-hook theme-set after the theme is fully applied.
+# $1 = theme name (snake-cased), not used — we read the live colors.toml.
+#
+# Writes skins/omarchy.yaml. config.yaml references skin: omarchy (stable,
+# chezmoi-managed). This file is regenerated on theme switches.
+
+COLORS_TOML="$HOME/.local/state/omarchy/current/theme/colors.toml"
+SKIN_FILE="$HOME/.config/k9s/skins/omarchy.yaml"
+
+[[ -f "$COLORS_TOML" ]] || exit 0
+mkdir -p "$(dirname "$SKIN_FILE")"
+
+python3 - "$COLORS_TOML" "$SKIN_FILE" << 'PYEOF'
+import sys, tomllib
+from pathlib import Path
+
+c = tomllib.loads(Path(sys.argv[1]).read_text())
+
+# k9s skin format uses YAML anchors (&name) and references (*name).
+# We build it as text since PyYAML doesn't emit anchors cleanly.
+tmpl = f"""base: &base "{c["background"]}"
+mantle: &mantle "{c["dark_background"]}"
+crust: &crust "{c["darker_background"]}"
+surface0: &surface0 "{c["lighter_background"]}"
+surface1: &surface1 "{c["selection"]}"
+text: &text "{c["foreground"]}"
+subtext0: &subtext0 "{c["light_foreground"]}"
+subtext1: &subtext1 "{c["dark_foreground"]}"
+blue: &blue "{c["blue"]}"
+red: &red "{c["red"]}"
+green: &green "{c["green"]}"
+yellow: &yellow "{c["yellow"]}"
+orange: &orange "{c["orange"]}"
+cyan: &cyan "{c["cyan"]}"
+magenta: &magenta "{c["magenta"]}"
+accent: &accent "{c["accent"]}"
+muted: &muted "{c["muted"]}"
+
+k9s:
+  body:
+    fgColor: *text
+    bgColor: *base
+    logoColor: *accent
+
+  prompt:
+    fgColor: *text
+    bgColor: *mantle
+    suggestColor: *blue
+
+  info:
+    fgColor: *orange
+    sectionColor: *text
+
+  dialog:
+    fgColor: *yellow
+    bgColor: *surface0
+    buttonFgColor: *base
+    buttonBgColor: *muted
+    buttonFocusFgColor: *base
+    buttonFocusBgColor: *accent
+    labelFgColor: *magenta
+    fieldFgColor: *text
+
+  frame:
+    border:
+      fgColor: *accent
+      focusColor: *blue
+
+    menu:
+      fgColor: *text
+      keyColor: *blue
+      numKeyColor: *orange
+
+    crumbs:
+      fgColor: *base
+      bgColor: *orange
+      activeColor: *magenta
+
+    status:
+      newColor: *blue
+      modifyColor: *magenta
+      addColor: *green
+      pendingColor: *yellow
+      errorColor: *red
+      highlightColor: *cyan
+      killColor: *accent
+      completedColor: *subtext0
+
+    title:
+      fgColor: *cyan
+      bgColor: *base
+      highlightColor: *magenta
+      counterColor: *yellow
+      filterColor: *green
+
+  views:
+    charts:
+      bgColor: *base
+      chartBgColor: *base
+      dialBgColor: *base
+      defaultDialColors:
+        - *green
+        - *red
+      defaultChartColors:
+        - *green
+        - *red
+      resourceColors:
+        cpu:
+          - *accent
+          - *blue
+        mem:
+          - *yellow
+          - *orange
+
+    table:
+      fgColor: *text
+      bgColor: *base
+      cursorFgColor: *surface0
+      cursorBgColor: *surface1
+      markColor: *magenta
+      header:
+        fgColor: *yellow
+        bgColor: *base
+        sorterColor: *cyan
+
+    xray:
+      fgColor: *text
+      bgColor: *base
+      cursorColor: *surface1
+      cursorTextColor: *base
+      graphicColor: *magenta
+
+    yaml:
+      keyColor: *blue
+      colonColor: *subtext0
+      valueColor: *text
+
+    logs:
+      fgColor: *text
+      bgColor: *base
+      indicator:
+        fgColor: *magenta
+        bgColor: *base
+
+  help:
+    fgColor: *text
+    bgColor: *base
+    sectionColor: *green
+    keyColor: *blue
+    numKeyColor: *orange
+"""
+
+Path(sys.argv[2]).write_text(tmpl)
+PYEOF

@@ -2,3 +2,6 @@ SRE
 Kubernetes
 PostFinance
 backend
+apiserver
+etcd
+kubecon

@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Regenerate lazygit's theme file from the active Omarchy theme.
+# Called by omarchy-hook theme-set after the theme is fully applied.
+# $1 = theme name (snake-cased), not used — we read the live colors.toml.
+#
+# Writes only the gui.theme block to a separate file that lazygit loads
+# via LG_CONFIG_FILE (set in zshrc). This keeps config.yml chezmoi-managed
+# and stable.
+
+COLORS_TOML="$HOME/.local/state/omarchy/current/theme/colors.toml"
+THEME_FILE="$HOME/.config/lazygit/theme.yml"
+
+[[ -f "$COLORS_TOML" ]] || exit 0
+
+python3 - "$COLORS_TOML" "$THEME_FILE" << 'PYEOF'
+import sys, tomllib, yaml
+from pathlib import Path
+
+c = tomllib.loads(Path(sys.argv[1]).read_text())
+
+theme = {
+    "gui": {
+        "theme": {
+            "activeBorderColor":          [c["accent"],         "bold"],
+            "inactiveBorderColor":        [c["dark_foreground"]],
+            "optionsTextColor":           [c["blue"]],
+            "selectedLineBgColor":        [c["selection"]],
+            "cherryPickedCommitBgColor":  [c["lighter_background"]],
+            "cherryPickedCommitFgColor":  [c["accent"]],
+            "unstagedChangesColor":       [c["red"]],
+            "searchingActiveBorderColor": [c["yellow"]],
+            "defaultFgColor":             [c["foreground"]],
+        }
+    }
+}
+
+Path(sys.argv[2]).write_text(yaml.dump(theme, default_flow_style=False, sort_keys=False))
+PYEOF
