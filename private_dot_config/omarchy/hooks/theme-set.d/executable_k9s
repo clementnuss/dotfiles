@@ -5,8 +5,9 @@ set -euo pipefail
 # Called by omarchy-hook theme-set after the theme is fully applied.
 # $1 = theme name (snake-cased), not used — we read the live colors.toml.
 #
-# Writes skins/omarchy.yaml. config.yaml references skin: omarchy (stable,
-# chezmoi-managed). This file is regenerated on theme switches.
+# Uses "default" for bg/fg so the terminal provides the background/foreground
+# (k9s rejects some hex values, and the terminal is already themed by Omarchy).
+# Only accent colors are pulled from colors.toml.
 
 COLORS_TOML="$HOME/.local/state/omarchy/current/theme/colors.toml"
 SKIN_FILE="$HOME/.config/k9s/skins/omarchy.yaml"
@@ -21,15 +22,19 @@ from pathlib import Path
 c = tomllib.loads(Path(sys.argv[1]).read_text())
 
 # k9s skin format uses YAML anchors (&name) and references (*name).
-# We build it as text since PyYAML doesn't emit anchors cleanly.
-tmpl = f"""base: &base "{c["background"]}"
+base = "default"
+fg = "default"
+
+tmpl = f"""base: &base "{base}"
 mantle: &mantle "{c["dark_background"]}"
 crust: &crust "{c["darker_background"]}"
 surface0: &surface0 "{c["lighter_background"]}"
 surface1: &surface1 "{c["selection"]}"
-text: &text "{c["foreground"]}"
+text: &text "{fg}"
 subtext0: &subtext0 "{c["light_foreground"]}"
 subtext1: &subtext1 "{c["dark_foreground"]}"
+muted: &muted "{c["muted"]}"
+accent: &accent "{c["accent"]}"
 blue: &blue "{c["blue"]}"
 red: &red "{c["red"]}"
 green: &green "{c["green"]}"
@@ -37,14 +42,12 @@ yellow: &yellow "{c["yellow"]}"
 orange: &orange "{c["orange"]}"
 cyan: &cyan "{c["cyan"]}"
 magenta: &magenta "{c["magenta"]}"
-accent: &accent "{c["accent"]}"
-muted: &muted "{c["muted"]}"
 
 k9s:
   body:
     fgColor: *text
     bgColor: *base
-    logoColor: *accent
+    logoColor: *magenta
 
   prompt:
     fgColor: *text
@@ -57,38 +60,38 @@ k9s:
 
   dialog:
     fgColor: *yellow
-    bgColor: *surface0
+    bgColor: *subtext1
     buttonFgColor: *base
     buttonBgColor: *muted
     buttonFocusFgColor: *base
-    buttonFocusBgColor: *accent
-    labelFgColor: *magenta
+    buttonFocusBgColor: *magenta
+    labelFgColor: *orange
     fieldFgColor: *text
 
   frame:
     border:
-      fgColor: *accent
+      fgColor: *magenta
       focusColor: *blue
 
     menu:
       fgColor: *text
       keyColor: *blue
-      numKeyColor: *orange
+      numKeyColor: *red
 
     crumbs:
       fgColor: *base
-      bgColor: *orange
-      activeColor: *magenta
+      bgColor: *red
+      activeColor: *orange
 
     status:
       newColor: *blue
       modifyColor: *magenta
       addColor: *green
-      pendingColor: *yellow
+      pendingColor: *orange
       errorColor: *red
       highlightColor: *cyan
-      killColor: *accent
-      completedColor: *subtext0
+      killColor: *magenta
+      completedColor: *muted
 
     title:
       fgColor: *cyan
@@ -110,7 +113,7 @@ k9s:
         - *red
       resourceColors:
         cpu:
-          - *accent
+          - *magenta
           - *blue
         mem:
           - *yellow
@@ -121,7 +124,7 @@ k9s:
       bgColor: *base
       cursorFgColor: *surface0
       cursorBgColor: *surface1
-      markColor: *magenta
+      markColor: *orange
       header:
         fgColor: *yellow
         bgColor: *base
@@ -143,7 +146,7 @@ k9s:
       fgColor: *text
       bgColor: *base
       indicator:
-        fgColor: *magenta
+        fgColor: *blue
         bgColor: *base
 
   help:
@@ -151,7 +154,7 @@ k9s:
     bgColor: *base
     sectionColor: *green
     keyColor: *blue
-    numKeyColor: *orange
+    numKeyColor: *red
 """
 
 Path(sys.argv[2]).write_text(tmpl)
