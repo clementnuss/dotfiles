@@ -30,13 +30,7 @@ quick-terminal-size = 35%
 # Slowdown mouse scrolling
 mouse-scroll-multiplier = 0.95
 
-{{- if eq .chezmoi.os "darwin" }}
 # Theme
 theme = Catppuccin Latte
-{{- else }}
-# Dynamic theme colors (Omarchy)
-config-file = ?"~/.local/state/omarchy/current/theme/ghostty.conf"
-
 # Fix general slowness on hyprland (https://github.com/ghostty-org/ghostty/discussions/3224)
 async-backend = epoll
-{{- end }}

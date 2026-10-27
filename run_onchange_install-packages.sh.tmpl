@@ -29,7 +29,6 @@ log_error() {
 OFFICIAL_PACKAGES=(
     atuin
     chezmoi
-    claude-code
     dog
     fluxcd
     ghq
@@ -40,32 +39,58 @@ OFFICIAL_PACKAGES=(
     gpg-tui
     k9s
     kubectl
-    nebula
-    npm
     rbw
     rclone
     sops
-    talhelper
     talosctl
     tmux
     wireguard-tools
     zsh
+    # --- Hyprland desktop (fw13): compositor + shell + audio + input ---
+    bluez
+    bluez-utils
+    brightnessctl
+    btop
+    ddcutil
+    fuzzel
+    ghostty
+    grim
+    hypridle
+    hyprlock
+    hyprland
+    networkmanager
+    noto-fonts-emoji
+    pipewire
+    pipewire-alsa
+    pipewire-audio
+    pipewire-pulse
+    power-profiles-daemon
+    pulsemixer
+    python-gobject
+    rofimoji
+    slurp
+    sof-firmware
+    swaybg
+    ttf-jetbrains-mono-nerd
+    wl-clipboard
+    wireplumber
+    wtype
 )
 
 # AUR packages (requires yay or paru)
 AUR_PACKAGES=(
-    betterbird-bin
-    bitwarden-bin
-    brave-bin
     caligula-bin
-    ddcutil-service
-    gonzo
-    hyprmon-bin
+    # gonzo
     kanata-bin
     kind
     kopia-bin
-    rclone-mount-service
     vial-appimage
+    # --- Hyprland desktop (fw13): shell suite + monitor/wifi tooling ---
+    ddcutil-service
+    hyprmoncfg
+    omni-launcher
+    omni-shell
+    wifitui
 )
 
 # Detect AUR helper
