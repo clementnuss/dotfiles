@@ -1,0 +1,6 @@
+#!/bin/sh
+# Clipboard history picker: cliphist (store) + fuzzel (centered picker).
+# Feed: wl-paste --watch cliphist store (autostarted in hyprland.lua).
+# Esc-safe: nothing is copied unless a line was actually selected.
+sel=$(cliphist list | fuzzel --dmenu --prompt "paste  ")
+[ -n "$sel" ] && printf '%s' "$sel" | cliphist decode | wl-copy

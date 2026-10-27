@@ -1,0 +1,51 @@
+#!/bin/sh
+# brightnessctl shim for omni-shell only. Hyprland's autostart launches
+# omni-shell with this directory prepended to PATH, so the Control Center
+# brightness slider reports and drives the ASUS PA27JCV over DDC/CI
+# (ddcutil-service on the session bus) instead of the internal panel.
+#
+# Recognizes exactly the two invocations omni-shell's BacklightService
+# makes; anything else — and any DDC failure — falls through to the real
+# brightnessctl. Standalone laptop (no DDC display) therefore reverts to
+# the internal panel automatically.
+#
+#   brightnessctl -m         -> "name,backlight,current,pct%,max"   (2s poll)
+#   brightnessctl -q set N%  -> set VCP 0x10 to N%                 (slider)
+#
+# Caution (ddcutil-service docs): VCP writes cost monitor NVRAM cycles.
+# Slider drags commit continuously; keep them human-paced and prefer the
+# Fn keys for big changes.
+
+REAL=/usr/bin/brightnessctl
+SVC='com.ddcutil.DdcutilService'
+OBJ='/com/ddcutil/DdcutilObject'
+IFACE='com.ddcutil.DdcutilInterface'
+
+getvcp() {
+    busctl --user call "$SVC" "$OBJ" "$IFACE" GetVcp isyu 1 "" 0x10 0 2>/dev/null
+}
+
+if [ "$1" = "-m" ] && [ $# -eq 1 ]; then
+    out=$(getvcp) || exec "$REAL" "$@"
+    set -- $out
+    cur=$2 max=$3
+    [ -n "$cur" ] && [ "$max" -gt 0 ] 2>/dev/null || exec "$REAL" "$@"
+    echo "asus-ddc,backlight,$cur,$((cur * 100 / max))%,$max"
+    exit 0
+fi
+
+if [ "$1" = "-q" ] && [ "$2" = "set" ] && [ $# -eq 3 ]; then
+    pct=$(printf '%s' "$3" | tr -dc '0-9')
+    [ -n "$pct" ] || exec "$REAL" "$@"
+    out=$(getvcp) || exec "$REAL" "$@"
+    set -- $out
+    cur=$2 max=$3
+    [ -n "$cur" ] && [ "$max" -gt 0 ] 2>/dev/null || exec "$REAL" "$@"
+    new=$((pct * max / 100))
+    [ "$new" -lt 0 ] && new=0
+    [ "$new" -gt "$max" ] && new=$max
+    busctl --user call "$SVC" "$OBJ" "$IFACE" SetVcp isyqu 1 "" 0x10 "$new" 4 >/dev/null 2>&1
+    exit 0
+fi
+
+exec "$REAL" "$@"

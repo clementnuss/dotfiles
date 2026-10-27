@@ -1,0 +1,18 @@
+{
+  "themeName": "Catppuccin Latte",
+  "fontSize": 15,
+  "padding": 7,
+  "opacity": 0.9,
+  "opaqueOpacity": 0.9,
+  "colors": {
+    "background": "#eff1f5",
+    "glassSheen": "#eff1f5",
+    "foreground": "#4c4f69",
+    "idle": "#6c6f85",
+    "active": "#1e66f5",
+    "accent": "#8839ef",
+    "border": "#8839ef",
+    "borderSecondary": "#7287fd",
+    "danger": "#d20f39"
+  }
+}

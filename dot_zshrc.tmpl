@@ -10,6 +10,8 @@ zmodload zsh/zprof
 # ----------------------------------------------------------------------------
 export XDG_CONFIG_HOME=~/.config
 export EDITOR=nvim
+# give pinentry a terminal to prompt in (git/tmux spawn gpg without a tty)
+export GPG_TTY=$TTY
 
 # Load lazygit base config
 export LG_CONFIG_FILE="$XDG_CONFIG_HOME/lazygit/config.yml"
@@ -35,6 +37,8 @@ fi
 # Go and Kubernetes paths
 path+=("${GOPATH:-$HOME/go}/bin")
 path+=("$HOME/.krew/bin")
+# Personal scripts (gpg-unlock, kanata-switch, brightness-step, …)
+path+=("$HOME/.local/bin")
 
 # pnpm
 export PNPM_HOME="${HOME}/.local/share/pnpm"
@@ -217,5 +221,8 @@ creds() {
 # ----------------------------------------------------------------------------
 # Local Overrides
 # ----------------------------------------------------------------------------
+# wifitui: use the Catppuccin Latte theme (matches ghostty's light theme)
+alias wifitui='wifitui --theme="$HOME/.config/wifitui/theme.toml"'
+
 # Load local customizations if they exist
 [ -f ~/.zshrc-local ] && source ~/.zshrc-local

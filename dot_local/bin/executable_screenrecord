@@ -1,0 +1,54 @@
+#!/bin/bash
+# screenrecord [region|window|screen]
+# Toggle for gpu-screen-recorder: run once to record (region = slurp a
+# selection [default]; window = focused window; screen = current monitor),
+# run again to stop and get a notification with the finished file.
+# 60fps GPU-encoded MP4 → ~/Videos. For desktop audio add `-a default_output`
+# to the launch lines (`--list-audio-devices` shows all sources).
+
+set -u
+DIR="$HOME/Videos"
+mkdir -p "$DIR"
+PIDFILE="$XDG_RUNTIME_DIR/screenrecord.pid"
+OUTFILE="$XDG_RUNTIME_DIR/screenrecord.out"
+
+# Already recording? Stop: SIGINT makes gpu-screen-recorder finalize the file.
+if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE" 2>/dev/null)" 2>/dev/null; then
+    pid=$(cat "$PIDFILE")
+    kill -INT "$pid"
+    for _ in $(seq 1 20); do
+        kill -0 "$pid" 2>/dev/null || break
+        sleep 0.5
+    done
+    rm -f "$PIDFILE"
+    file=$(cat "$OUTFILE" 2>/dev/null)
+    rm -f "$OUTFILE"
+    notify-send "Recording saved" "$file"
+    exit 0
+fi
+
+mode="${1:-region}"
+FILE="$DIR/screenrecording-$(date +%Y-%m-%d_%H-%M-%S).mp4"
+
+case "$mode" in
+    region)
+        # slurp -f emits gpu-screen-recorder's -region geometry format WxH+X+Y
+        geom=$(slurp -f '%wx%h+%x+%y') || exit 0
+        [ -n "$geom" ] || exit 0
+        gpu-screen-recorder -w region -region "$geom" -o "$FILE" &
+        ;;
+    window)
+        gpu-screen-recorder -w focused -o "$FILE" &
+        ;;
+    screen)
+        gpu-screen-recorder -w screen -o "$FILE" &
+        ;;
+    *)
+        echo "usage: screenrecord [region|window|screen]" >&2
+        exit 1
+        ;;
+esac
+
+echo $! > "$PIDFILE"
+echo "$FILE" > "$OUTFILE"
+notify-send "Recording started" "$FILE"

@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# gpg-unlock — preset the GPG passphrase from Bitwarden into gpg-agent's RAM cache.
+# The passphrase never touches disk; it vanishes on reboot or
+# `gpgconf --kill gpg-agent`.
+set -euo pipefail
+
+rbw_entry="GPG-key-2025"
+preset="$(gpgconf --list-dirs libexecdir)/gpg-preset-passphrase"
+
+# every passphrase-protected secret key known to the agent
+# (e.g. the signing subkey; the offline primary is not listed)
+mapfile -t grips < <(gpg-connect-agent 'keyinfo --list' /bye \
+  | awk '$1 == "S" && $8 == "P" { print $3 }')
+
+if [ ${#grips[@]} -eq 0 ]; then
+  echo "gpg-unlock: no protected secret keys found in the agent" >&2
+  exit 1
+fi
+
+passphrase="$(rbw get "$rbw_entry")"
+
+for grip in "${grips[@]}"; do
+  printf '%s\n' "$passphrase" | "$preset" --preset "$grip"
+  echo "unlocked keygrip ${grip:0:16}…"
+done

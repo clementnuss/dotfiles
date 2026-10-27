@@ -47,13 +47,16 @@ OFFICIAL_PACKAGES=(
     wireguard-tools
     zsh
     # --- Hyprland desktop (fw13): compositor + shell + audio + input ---
+    7zip        # yazi archive preview/extraction (archive.lua wants 7zz)
     bluez
     bluez-utils
     brightnessctl
     btop
     ddcutil
+    ffmpeg      # yazi video thumbnails + metadata (video.lua calls ffmpeg/ffprobe)
     fuzzel
     ghostty
+    gpu-screen-recorder
     grim
     hypridle
     hyprlock
@@ -68,6 +71,7 @@ OFFICIAL_PACKAGES=(
     pulsemixer
     python-gobject
     rofimoji
+    satty
     slurp
     sof-firmware
     swaybg
@@ -75,6 +79,7 @@ OFFICIAL_PACKAGES=(
     wl-clipboard
     wireplumber
     wtype
+    yazi
 )
 
 # AUR packages (requires yay or paru)
@@ -140,6 +145,18 @@ if [[ -n "$AUR_HELPER" ]]; then
     else
         log_info "All AUR packages are already installed"
     fi
+fi
+
+# --- cliphist-next: upstream master build (unreleased as of v0.7.0) ---
+# The entry-metadata work (list -fields id,timestamp) is merged upstream but
+# not released; cliphist-redact --min-age needs it. Delete this block AND
+# ~/.local/bin/cliphist-next once the distro cliphist has -fields, then
+# cliphist-redact falls back to `cliphist` seamlessly.
+if command -v go &> /dev/null && [ ! -x "$HOME/.local/bin/cliphist-next" ]; then
+    log_info "Building cliphist-next from upstream master (pinned sha)..."
+    GOBIN="$HOME/.local/bin" go install go.senan.xyz/cliphist@f968c4f01395860e8c989c550c1621124927890f \
+        && mv "$HOME/.local/bin/cliphist" "$HOME/.local/bin/cliphist-next" \
+        || log_warn "cliphist-next build failed; cliphist-redact --min-age will warn and degrade"
 fi
 
 log_info "Package installation complete!"

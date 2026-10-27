@@ -1,0 +1,42 @@
+#!/bin/sh
+# Unified brightness for the laptop Fn keys:
+#   - internal panel via brightnessctl (no-op when its output is off)
+#   - external ASUS PA27JCV via ddcutil-service (D-Bus, display 1, VCP 0x10)
+# ddcutil-service caches values, so read+write stays fast; NO_VERIFY (4)
+# skips the verify/retry round-trip for fire-and-forget writes.
+# Note: VCP writes cost monitor NVRAM cycles - keep presses human-paced.
+
+SVC='com.ddcutil.DdcutilService'
+OBJ='/com/ddcutil/DdcutilObject'
+IFACE='com.ddcutil.DdcutilInterface'
+
+case "$1" in
+  up)   op='+' ;;
+  down) op='-' ;;
+  *) echo "usage: brightness-step up|down" >&2; exit 1 ;;
+esac
+
+# Internal panel (if present): step by 5% of max, floored at 10% so an
+# undock-and-open-lid never meets a black screen. Absolute write keeps
+# the floor deterministic (brightnessctl handles device permissions).
+cur=$(cat /sys/class/backlight/*/brightness 2>/dev/null | head -1)
+max=$(cat /sys/class/backlight/*/max_brightness 2>/dev/null | head -1)
+if [ -n "$cur" ] && [ -n "$max" ] && [ "$max" -gt 0 ] 2>/dev/null; then
+    step=$((max / 20))
+    floor=$((max / 10))
+    new=$((cur ${op} step))
+    [ "$new" -lt "$floor" ] && new=$floor
+    [ "$new" -gt "$max" ] && new=$max
+    brightnessctl -q -c backlight set "$new"
+fi
+
+# External monitor: cached GetVcp -> step -> SetVcp
+out=$(busctl --user call "$SVC" "$OBJ" "$IFACE" GetVcp isyu 1 "" 0x10 0 2>/dev/null) || exit 0
+set -- $out
+cur=$2
+max=$3
+[ -n "$cur" ] || exit 0
+new=$((cur ${op} 5))
+[ "$new" -lt 0 ] && new=0
+[ "$new" -gt "$max" ] && new=$max
+busctl --user call "$SVC" "$OBJ" "$IFACE" SetVcp isyqu 1 "" 0x10 "$new" 4 >/dev/null 2>&1

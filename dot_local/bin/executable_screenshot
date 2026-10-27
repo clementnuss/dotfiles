@@ -1,0 +1,40 @@
+#!/bin/bash
+# screenshot [region|window|all]
+# Capture with grim, save to ~/Pictures/Screenshots, copy to the clipboard,
+# and send a notification with a thumbnail. omni-shell's notification service
+# maps category-"screenshot" toasts to satty: click the toast to annotate
+# (edited copies land in ~/Pictures — see the ~/pictures symlink gotcha in the
+# chezmoi README). Pressing the bind again cancels a pending selection.
+
+set -u
+DIR="$HOME/Pictures/Screenshots"
+mkdir -p "$DIR"
+
+# Second press while a selection is pending: cancel it and exit.
+pkill -x slurp && exit 0
+
+mode="${1:-region}"
+FILE="$DIR/screenshot-$(date +%Y-%m-%d_%H-%M-%S).png"
+
+case "$mode" in
+    region)
+        geom=$(slurp) || exit 0
+        [ -n "$geom" ] || exit 0
+        grim -g "$geom" "$FILE" || exit 1
+        ;;
+    window)
+        geom=$(hyprctl -j activewindow | jq -r '"\(.at[0]),\(.at[1]) \(.size[0]) \(.size[1])"') || exit 1
+        [ -n "$geom" ] && [ "$geom" != "null" ] || exit 1
+        grim -g "$geom" "$FILE" || exit 1
+        ;;
+    all)
+        grim "$FILE" || exit 1
+        ;;
+    *)
+        echo "usage: screenshot [region|window|all]" >&2
+        exit 1
+        ;;
+esac
+
+wl-copy --type image/png < "$FILE"
+notify-send -c screenshot -i "$FILE" "Screenshot saved" "$FILE — click the toast to annotate"

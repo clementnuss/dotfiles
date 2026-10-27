@@ -1,0 +1,6 @@
+# GTK 4.20+ dropped its built-in Wayland compose/dead-key fallback when no
+# input-method framework is running (only affects GTK4 apps; Chromium/Qt do
+# their own). "simple" restores GTK's naive compose handling, so the
+# compose:caps xkb option works in ghostty. If an IME (fcitx5/ibus) is ever
+# installed for CJK input, remove this line.
+GTK_IM_MODULE=simple

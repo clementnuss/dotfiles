@@ -1,0 +1,22 @@
+# wifitui theme for a Catppuccin Latte (light) terminal.
+# Single hex values instead of [light, dark] pairs: no background
+# auto-detection, always tuned for ghostty's catppuccin-latte.
+
+Primary = "#fe640b"   # peach - selection highlight
+Subtle = "#6c6f85"    # subtext0 - less important text
+Success = "#40a02b"   # green - active connections
+Error = "#d20f39"     # red
+Normal = "#4c4f69"    # text - network names
+Disabled = "#9ca0b0"  # overlay0 - hidden/out-of-range
+Border = "#bcc0cc"    # surface1
+SignalHigh = "#40a02b" # green
+SignalLow = "#df8e1d"  # yellow
+Saved = "#1e66f5"     # blue - saved networks
+
+# Icons (emoji - requires an emoji font, e.g. noto-fonts-emoji)
+TitleIcon = "🛜 "
+NetworkSecureIcon = "🔒 "
+NetworkOpenIcon = "🔓 "
+NetworkUnknownIcon = "❓ "
+NetworkSavedIcon = "💾 "
+AccessPointIcon = "📡"

@@ -2,7 +2,7 @@
 Version=1.0
 Name=Slack
 Comment=Slack
-Exec=omarchy-launch-webapp https://app.slack.com/client
+Exec=xdg-open https://app.slack.com/client
 Terminal=false
 Type=Application
 Icon=/home/cjmnuss/.local/share/applications/icons/Slack.png

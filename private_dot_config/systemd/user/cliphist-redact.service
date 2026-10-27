@@ -1,0 +1,6 @@
+[Unit]
+Description=Redact secret-looking entries from cliphist history
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/cliphist-redact --min-age 120

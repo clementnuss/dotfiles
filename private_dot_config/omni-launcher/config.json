@@ -1,0 +1,12 @@
+{
+  "radius": 14,
+  "colors": {
+    "background": "#eff1f5",
+    "foreground": "#4c4f69",
+    "idle": "#6c6f85",
+    "accent": "#8839ef",
+    "overlayStrong": "#dce0e8",
+    "overlayWeak": "#e6e5e8",
+    "border": "#8839ef"
+  }
+}

@@ -1,0 +1,18 @@
+[Unit]
+# hypridle — idle daemon (dim 2.5m, lock 5m, suspend 30m; see hypridle.conf).
+# Runs as a systemd user service instead of a Hyprland autostart line so a
+# silent death (happened 2026-10-27 after the hyprlock SIGABRT cascade) is
+# auto-revived instead of leaving the laptop without dim/lock/suspend.
+# uwsm imports the compositor env (WAYLAND_DISPLAY, HYPRLAND_INSTANCE_SIGNATURE)
+# into the user manager, so hypridle can find its Wayland socket here.
+Description=hypridle — Hyprland idle daemon (dim/lock/suspend)
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/hypridle
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=graphical-session.target
