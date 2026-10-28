@@ -7,7 +7,6 @@ Multi-machine chezmoi repo. This README stays in the source only
 
 - **fw13-cjmnuss** — Framework 13 (AMD Ryzen AI 300), Arch Linux, Hyprland.
   Minimal, explainable, Catppuccin **Latte** (light). This section documents it.
-- macOS machines — see `run_once_100_install-brews.sh.tmpl` (darwin-only).
 
 ## Boot chain (fw13)
 
@@ -27,6 +26,7 @@ machine is idle/suspended; the LUKS passphrase is the boot boundary.
 | Hyprland (Lua config) | `~/.config/hypr/hyprland.lua` | binds, input (`compose:caps`), misc (Latte bg color, no animations, `focus_on_activate` so xdg-open'd files steal focus, `allow_session_lock_restore`), autostart. The `dofile` include from hyprmoncfg **must stay last** |
 | hyprlock | `~/.config/hypr/hyprlock.conf` | required — v0.9.6 does NOT fall back to /usr/share |
 | hypridle | `~/.config/hypr/hypridle.conf` + `~/.config/systemd/user/hypridle.service` | dim 2.5min, lock 5min, suspend 30min. All listeners respect systemd inhibitors. Runs as a **supervised systemd user service** (Restart=always) — an autostart line left it silently dead once (2026-10-27, after the hyprlock SIGABRT cascade); now a crash is a 3s respawn |
+| kanata | `~/.config/kanata/main.kbd` + `~/.config/systemd/user/kanata.service` | home-row mods (a/s/d/f = ctrl/alt/meta/shift, mirrored on j/k/l/;). systemd user service (`default.target`). Compose stays with Hyprland's xkb `compose:caps` — kanata no longer does compose (mac setup removed). Needs uinput access: `.root/` udev rule + `input`/`uinput` groups (see `.root/README.md`) |
 | omni-shell (quickshell) | `~/.config/omni-shell/config.json` (+`extensions/`) | bar, control center, toasts, notifications. Launched via autostart **with the shim PATH** (see gotchas) |
 | omni-launcher | `~/.config/omni-launcher/config.json` | SUPER+D / SUPER+Space toggle |
 | caffeine tile | `~/.config/omni-shell/extensions/caffeine.qml` | "Keep always on": toggles a `sleep:idle` systemd inhibitor (blocks suspend + all hypridle actions) |
@@ -47,6 +47,7 @@ machine is idle/suspended; the LUKS passphrase is the boot boundary.
 
 - getty@tty1 autologin override — **installed** ✓
 - `/etc/modules-load.d/i2c-dev.conf` — **installed** ✓
+- kanata udev rule + uinput module-load — **pending install** (see `.root/README.md`)
 
 ## Operational gotchas (learned the hard way)
 

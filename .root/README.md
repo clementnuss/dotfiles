@@ -39,3 +39,32 @@ Install:
       /etc/modules-load.d/i2c-dev.conf
 
 Undo: remove that file.
+
+## kanata uinput access
+
+The kanata systemd user service creates a virtual keyboard via
+`/dev/uinput`, which is root-only by default. The udev rule grants the
+`uinput` group read/write access; the module-load file loads `uinput` at
+boot. Group membership (`input` + `uinput`) is also required and only takes
+effect after a new login.
+
+Install:
+
+    sudo groupadd --system uinput
+    sudo usermod -aG input,uinput cjmnuss
+    sudo install -m 644 \
+      ~/.local/share/chezmoi/.root/etc/udev/rules.d/99-input.rules \
+      /etc/udev/rules.d/99-input.rules
+    sudo install -m 644 \
+      ~/.local/share/chezmoi/.root/etc/modules-load.d/uinput.conf \
+      /etc/modules-load.d/uinput.conf
+    sudo udevadm control --reload && sudo udevadm trigger
+
+Then log out/in (or reboot) for the group membership, and
+`systemctl --user enable --now kanata`.
+
+Verify: `ls -l /dev/uinput` shows `root:uinput` with mode `0660`, and
+`systemctl --user status kanata` is active.
+
+Undo: remove both files, drop the udev rule, `sudo gpasswd -d cjmnuss uinput`
+(and optionally `sudo groupdel uinput`).

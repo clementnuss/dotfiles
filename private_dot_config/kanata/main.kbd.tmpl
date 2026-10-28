@@ -30,13 +30,6 @@
   )
 )
 
-{{- if eq .chezmoi.os "darwin" }}
-;; Default layer on macOS — split keyboard with compose key, no home-row mods.
-(deflayermap (split)
-  caps (one-shot-release 3000 (layer-while-held compose1))
-)
-
-{{- end }}
 (deflayermap (main)
   a (t! charmod a lctl)
   s (t! charmod s lalt)
@@ -46,7 +39,4 @@
   k (t! charmod k lmet)
   l (t! charmod l lalt)
   ; (t! charmod ; lctl)
-{{- if eq .chezmoi.os "darwin" }}
-  caps (one-shot-release 3000 (layer-while-held compose1))
-{{- end }}
 )
