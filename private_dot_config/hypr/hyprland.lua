@@ -22,6 +22,7 @@ hl.config({
         disable_hyprland_logo   = true,              -- no logo overlay
         background_color        = "rgba(eff1f5ff)", -- Catppuccin Latte base
         allow_session_lock_restore = true,           -- hyprlock crashed? re-running it from a TTY re-takes the lock
+        focus_on_activate       = true,              -- xdg-open'd files jump to the already-open app (tab focus follows)
     },
     animations = {
         enabled = false, -- no slide/pop-in/fade: instant windows, workspaces, layers
