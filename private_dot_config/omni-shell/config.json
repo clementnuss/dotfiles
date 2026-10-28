@@ -13,6 +13,7 @@
     "accent": "#8839ef",
     "border": "#8839ef",
     "borderSecondary": "#7287fd",
-    "danger": "#d20f39"
+    "danger": "#d20f39",
+    "glassBorder": "#8839ef"
   }
 }
