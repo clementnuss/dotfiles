@@ -19,6 +19,13 @@ autologin fires, the session **restarts within seconds** — to get a plain
 shell, log in on tty2. The lock screen is the security boundary when the
 machine is idle/suspended; the LUKS passphrase is the boot boundary.
 
+Bare-metal reinstall lives in `install/` (source-only, `.chezmoiignore`):
+`fw13.json` is the proven manual runbook expressed as archinstall data
+(LUKS2 + btrfs `@`+`@home`, swapless, sd-boot, `umask=0077` ESP),
+`README.md` is the day-zero guide, `BRIDGE.md` is shell → this boot chain.
+Not yet VM-proven — the open schema questions are listed there (Phase 2:
+qemu + OVMF, same ISO version the USB carries).
+
 ## Session components
 
 | Component | Config (all chezmoi-managed) | Notes |
@@ -42,6 +49,7 @@ machine is idle/suspended; the LUKS passphrase is the boot boundary.
 | yazi | `~/.config/yazi/theme.toml` (+ `Catppuccin-latte.tmTheme`) | terminal file browser, SUPER+SHIFT+F in ghostty. catppuccin/yazi latte-**mauve** (accent matches omni-shell); the `.tmTheme` gives Latte syntax colors in the preview pane |
 | screenshots | `~/.local/bin/screenshot` | SUPER+P region, SUPER+SHIFT+P focused window (`region|window|all`). grim → `~/Pictures/Screenshots` + clipboard + thumbnail toast; toast click → satty via omni-shell's category-`screenshot` map |
 | screen recording | `~/.local/bin/screenrecord` | gpu-screen-recorder toggle (`region|window|screen`), 60fps GPU MP4 → `~/Videos`, run again to stop. No bind by design; add `-a default_output` for desktop audio |
+| kopia | `~/.local/bin/kopia-connect` | connects kopia to the Synology WebDAV repo: url/username/password from the `syno-nuss-roy` rbw item, repo password from `kopia-password`, path `/backup/kopia-<hostname>/` — one public script serves every machine. `~/.config/kopia/*` stays machine-local and must NEVER be chezmoi-managed (public repo; kopia writes its own files on connect). Idempotent; verifies with `kopia repository status` |
 
 ## Root-owned pieces → `.root/README.md`
 

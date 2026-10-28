@@ -1,0 +1,105 @@
+{
+  "archinstall-language": "English",
+  "bootloader_config": {
+    "bootloader": "Systemd-boot",
+    "uki": false,
+    "removable": false
+  },
+  "debug": false,
+  "disk_config": {
+    "config_type": "manual_partitioning",
+    "device_modifications": [
+      {
+        "device": "/dev/nvme0n1",
+        "wipe": true,
+        "partitions": [
+          {
+            "btrfs": [],
+            "dev_path": null,
+            "flags": ["boot"],
+            "fs_type": "fat32",
+            "mount_options": ["umask=0077"],
+            "mountpoint": "/boot",
+            "obj_id": "becc12a8-5874-43e1-97b3-24f581f0a37c",
+            "size": {
+              "sector_size": {"unit": "B", "value": 512},
+              "unit": "MiB",
+              "value": 1024
+            },
+            "start": {
+              "sector_size": {"unit": "B", "value": 512},
+              "unit": "MiB",
+              "value": 1
+            },
+            "status": "create",
+            "type": "primary"
+          },
+          {
+            "btrfs": [
+              {"mountpoint": "/", "name": "@"},
+              {"mountpoint": "/home", "name": "@home"}
+            ],
+            "dev_path": null,
+            "flags": [],
+            "fs_type": "btrfs",
+            "mount_options": ["noatime", "compress=zstd:1"],
+            "mountpoint": null,
+            "obj_id": "ca826896-c0a6-4e52-abb2-7f929c872a63",
+            "size": {
+              "sector_size": {"unit": "B", "value": 512},
+              "unit": "percent",
+              "value": 100
+            },
+            "start": {
+              "sector_size": {"unit": "B", "value": 512},
+              "unit": "MiB",
+              "value": 1025
+            },
+            "status": "create",
+            "type": "primary"
+          }
+        ]
+      }
+    ]
+  },
+  "disk_encryption": {
+    "encryption_type": "luks",
+    "partitions": ["ca826896-c0a6-4e52-abb2-7f929c872a63"]
+  },
+  "hostname": "fw13-cjmn",
+  "kernels": ["linux"],
+  "locale_config": {
+    "kb_layout": "us",
+    "sys_enc": "UTF-8",
+    "sys_lang": "en_US"
+  },
+  "network_config": {
+    "type": "network_manager"
+  },
+  "ntp": true,
+  "packages": [
+    "amd-ucode",
+    "btrfs-progs",
+    "dosfstools",
+    "git",
+    "libva-mesa-driver",
+    "mesa",
+    "networkmanager",
+    "sof-firmware",
+    "sudo",
+    "vim",
+    "vulkan-radeon",
+    "zsh"
+  ],
+  "pacman_config": {
+    "color": true,
+    "parallel_downloads": 5
+  },
+  "profile_config": null,
+  "script": "guided",
+  "silent": true,
+  "swap": {
+    "enabled": false
+  },
+  "timezone": "Europe/Zurich"
+}

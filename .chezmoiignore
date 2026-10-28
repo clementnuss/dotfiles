@@ -3,6 +3,7 @@
 .config/nvim/lazy-lock.json
 .config/nvim/sessions/
 scripts/
+install/
 README.md
 AGENTS.md
 UPSTREAM.md
