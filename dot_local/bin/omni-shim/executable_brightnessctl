@@ -12,6 +12,14 @@
 #   brightnessctl -m         -> "name,backlight,current,pct%,max"   (2s poll)
 #   brightnessctl -q set N%  -> set VCP 0x10 to N%                 (slider)
 #
+# ddcutil-service traps: busctl exits 0 even on daemon errors — validate
+# the reply's status field (2nd-to-last word, 0 = OK), not the exit code.
+# The daemon's display map goes stale after i2c re-enumeration
+# (suspend/resume, replug, dock): the slider SET path forces a Detect and
+# retries once; the 2s -m poll deliberately NEVER Detects (a probe loop on
+# an undocked laptop would spin forever) — it falls back to the internal
+# panel, and any Fn-key press re-detects for it.
+#
 # Caution (ddcutil-service docs): VCP writes cost monitor NVRAM cycles.
 # Slider drags commit continuously; keep them human-paced and prefer the
 # Fn keys for big changes.
@@ -22,14 +30,15 @@ OBJ='/com/ddcutil/DdcutilObject'
 IFACE='com.ddcutil.DdcutilInterface'
 
 getvcp() {
-    busctl --user call "$SVC" "$OBJ" "$IFACE" GetVcp isyu 1 "" 0x10 0 2>/dev/null
+    out=$(busctl --user call "$SVC" "$OBJ" "$IFACE" GetVcp isyu 1 "" 0x10 0 2>/dev/null) || return 1
+    cur=$(printf '%s\n' "$out" | awk '{print $2}')
+    max=$(printf '%s\n' "$out" | awk '{print $3}')
+    status=$(printf '%s\n' "$out" | awk '{print $(NF-1)}')
+    [ "${status:-1}" -eq 0 ] 2>/dev/null && [ "$max" -gt 0 ] 2>/dev/null
 }
 
 if [ "$1" = "-m" ] && [ $# -eq 1 ]; then
-    out=$(getvcp) || exec "$REAL" "$@"
-    set -- $out
-    cur=$2 max=$3
-    [ -n "$cur" ] && [ "$max" -gt 0 ] 2>/dev/null || exec "$REAL" "$@"
+    getvcp || exec "$REAL" "$@"
     echo "asus-ddc,backlight,$cur,$((cur * 100 / max))%,$max"
     exit 0
 fi
@@ -37,10 +46,11 @@ fi
 if [ "$1" = "-q" ] && [ "$2" = "set" ] && [ $# -eq 3 ]; then
     pct=$(printf '%s' "$3" | tr -dc '0-9')
     [ -n "$pct" ] || exec "$REAL" "$@"
-    out=$(getvcp) || exec "$REAL" "$@"
-    set -- $out
-    cur=$2 max=$3
-    [ -n "$cur" ] && [ "$max" -gt 0 ] 2>/dev/null || exec "$REAL" "$@"
+    getvcp || {
+        # stale display map (suspend/resume, replug): re-detect, retry once
+        busctl --user call "$SVC" "$OBJ" "$IFACE" Detect u 0 >/dev/null 2>&1
+        getvcp || exec "$REAL" "$@"
+    }
     new=$((pct * max / 100))
     [ "$new" -lt 0 ] && new=0
     [ "$new" -gt "$max" ] && new=$max

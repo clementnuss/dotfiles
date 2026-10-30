@@ -30,12 +30,27 @@ if [ -n "$cur" ] && [ -n "$max" ] && [ "$max" -gt 0 ] 2>/dev/null; then
     brightnessctl -q -c backlight set "$new"
 fi
 
-# External monitor: cached GetVcp -> step -> SetVcp
-out=$(busctl --user call "$SVC" "$OBJ" "$IFACE" GetVcp isyu 1 "" 0x10 0 2>/dev/null) || exit 0
-set -- $out
-cur=$2
-max=$3
-[ -n "$cur" ] || exit 0
+# External monitor (DDC display 1): cached GetVcp -> step -> SetVcp.
+# Two ddcutil-service traps handled here:
+#  - busctl exits 0 even when the daemon reports an error: the reply's
+#    status field (2nd-to-last word, 0 = OK) is the real success check,
+#    never the exit code.
+#  - the daemon caches its display map from first detection; after an
+#    i2c re-enumeration (suspend/resume, replug, dock) the map goes stale
+#    and every call returns INVALID_DISPLAY. Self-heal: force a Detect,
+#    retry once, then give up quietly.
+getvcp() {
+    out=$(busctl --user call "$SVC" "$OBJ" "$IFACE" GetVcp isyu 1 "" 0x10 0 2>/dev/null) || return 1
+    cur=$(printf '%s\n' "$out" | awk '{print $2}')
+    max=$(printf '%s\n' "$out" | awk '{print $3}')
+    status=$(printf '%s\n' "$out" | awk '{print $(NF-1)}')
+    [ "${status:-1}" -eq 0 ] 2>/dev/null && [ "$max" -gt 0 ] 2>/dev/null
+}
+
+if ! getvcp; then
+    busctl --user call "$SVC" "$OBJ" "$IFACE" Detect u 0 >/dev/null 2>&1
+    getvcp || exit 0
+fi
 new=$((cur ${op} 5))
 [ "$new" -lt 0 ] && new=0
 [ "$new" -gt "$max" ] && new=$max
