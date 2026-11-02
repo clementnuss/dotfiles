@@ -39,8 +39,8 @@ qemu + OVMF, same ISO version the USB carries).
 | caffeine tile | `~/.config/omni-shell/extensions/caffeine.qml` | "Keep always on": toggles a `sleep:idle` systemd inhibitor (blocks suspend + all hypridle actions) |
 | notifications | config.json keys | toast size = `fontSize`/`padding` (live-watched, no restart); `colors.glassBorder` draws the toast outline — the default is 10% white, invisible on Latte. Center opens via the **bar bell**, left-click (bell only appears when history > 0 or DND is on). SUPER+, clears toasts + history via `omni-shell-ipc control clearNotifications`. Keyboard-open and always-visible/blue-on-unread bell are both blocked on upstream — two issue drafts ready (IPC target + bell module behavior) |
 | Wallpaper | `~/Pictures/waves-light.jpg` (NOT chezmoi-managed) | `swaybg -m fill` in autostart; solid Latte base color underneath as fallback |
-| Brightness | `~/.local/bin/brightness-step` + `~/.local/bin/omni-shim/brightnessctl` | Fn keys → brightnessctl (internal, floored 10%) + ddcutil-service (ASUS over DDC/CI). The shim sits in quickshell's PATH so the control-center slider drives the ASUS; falls back to the internal panel when no DDC display |
-| ddcutil-service | no config (session D-Bus, auto-activates) | needs `i2c_dev` at boot (`.root/etc/modules-load.d/i2c-dev.conf`, installed) |
+| Brightness | `~/.local/bin/brightness-step` + `~/.local/bin/omni-shim/brightnessctl` | Fn keys → brightnessctl (internal, floored 10%) + ddcutil-service (ASUS over DDC/CI). The shim sits in quickshell's PATH so the control-center slider drives the ASUS; falls back to the internal panel when no DDC display. Both scripts validate the D-Bus reply's **status field** (busctl exits 0 even on daemon errors) and self-heal a stale ddcutil-service display map (forced `Detect` + one retry); the slider's 2s poll never Detects by design — fallback only |
+| ddcutil-service | no config (session D-Bus, auto-activates; `pkill -x ddcutil-service` + any call respawns it) | needs `i2c_dev` at boot (`.root/etc/modules-load.d/i2c-dev.conf`, installed). Caches its display map from activation — races the monitor's boot handshake and can serve a stale/empty map (see gotchas) |
 | ghostty | `~/.config/ghostty/config` | Nerd Font 10pt, `catppuccin-latte` theme (written by ghostty's in-app picker), padding, compose works via uwsm env |
 | uwsm env | `~/.config/uwsm/env` | `GTK_IM_MODULE=simple` — GTK 4.20+ dropped its Wayland compose/dead-key fallback without an IME; this restores it for every GTK4 app (delete if ever installing fcitx5/ibus) |
 | btop | `~/.config/btop/btop.conf` | SUPER+SHIFT+T system monitor, catppuccin-latte theme |
@@ -50,12 +50,17 @@ qemu + OVMF, same ISO version the USB carries).
 | screenshots | `~/.local/bin/screenshot` | SUPER+P region, SUPER+SHIFT+P focused window (`region|window|all`). grim → `~/Pictures/Screenshots` + clipboard + thumbnail toast; toast click → satty via omni-shell's category-`screenshot` map |
 | screen recording | `~/.local/bin/screenrecord` | gpu-screen-recorder toggle (`region|window|screen`), 60fps GPU MP4 → `~/Videos`, run again to stop. No bind by design; add `-a default_output` for desktop audio |
 | kopia | `~/.local/bin/kopia-connect` | connects kopia to the Synology WebDAV repo: url/username/password from the `syno-nuss-roy` rbw item, repo password from `kopia-password`, path `/backup/kopia-<hostname>/` — one public script serves every machine. `~/.config/kopia/*` stays machine-local and must NEVER be chezmoi-managed (public repo; kopia writes its own files on connect). Idempotent; verifies with `kopia repository status` |
+| printing | CUPS queue `MFC-L8690CDW` + `cups.socket` | driverless IPP Everywhere to the Brother MFC-L8690CDW (`ipp://Brother-L8690CDW-ClemJul/ipp/print`); system default via /etc/cups/lpoptions; web UI :631 auth = PAM/wheel (no cupsd accounts, no edits made). **ghostscript is load-bearing** (optdep of cups-filters). Full setup + recovery: `print.md` |
+| scanning | scan-to-FTP from the printer (primary); sane-airscan + simple-scan (optional pull-scan) | **Primary: scan-to-FTP** — printer-initiated, configured on the MFC's console, nothing on this machine. PC pull-scan works **zero-config** (airscan built-in WS-Discovery, no avahi, proven by a live test scan); the deterministic WSD/IPv4 entry is archived in `.root/` but NOT installed — add it only if discovery ever flakes. airscan ignores `~/.config/sane.d/`; the /etc file is package-owned and upgrade-clobbered. Verify: `scanimage -L` |
+| removable media | udisks2 + udiskie (`systemd/user/udiskie.service`) | automounts USB/SD to `/run/media/cjmnuss/<label>` **as the user's uid** (vfat uid=1000 — files owned by you, no root-owned card); internal disks excluded by udiskie's built-in `!is_external` rule (nvme/ESP never automount); devices already present at startup get mounted too; explicit `--automount --notify` (mount toasts via omni-shell). Runs as a supervised systemd user service, hypridle-style — a manually-started udiskie died silently with a broken env once. No config file; flags + defaults suffice. FAT labels matter: no label ⇒ UUID mountpoint (fix: `fatlabel`) |
+| hyprlock PAM | `/etc/pam.d/hyprlock` (`.root/`) | pam_unix-only stack replacing the stock `auth include login` — Arch's system-auth faillock (compiled defaults deny=3/unlock_time=600; faillock.conf fully commented) made 3 fumbled unlock attempts lock the **account** for 10 min: correct password refused at hyprlock, TTY and sudo alike (2026-11-02, hit for real). sudo/su/TTY keep faillock — the lockscreen is not a login surface (LUKS = data boundary, tty1 autologin = login path). Break-glass: `sudo faillock --user cjmnuss --reset`, or reboot → autologin. Install/undo + upgrade-pacnew note: `.root/README.md` |
 
 ## Root-owned pieces → `.root/README.md`
 
 - getty@tty1 autologin override — **installed** ✓
 - `/etc/modules-load.d/i2c-dev.conf` — **installed** ✓
-- kanata udev rule + uinput module-load — **pending install** (see `.root/README.md`)
+- kanata udev rule + uinput module-load — **installed** ✓
+- `/etc/nftables.conf` firewall — **pending install** (see `.root/README.md`)
 
 ## Operational gotchas (learned the hard way)
 
@@ -70,6 +75,54 @@ qemu + OVMF, same ISO version the USB carries).
 - **hyprlock 0.9.6 SIGABRTs on `dpms off` while locked** (hyprwm/hyprlock#984/#991/#953) — hypridle deliberately has NO dpms listener; the 30min suspend darkens the screen instead. Recovery from a TTY: `hyprctl eval 'hl.clear_crashed_lockscreen()'`, or just re-run `hyprlock` — allowed by `allow_session_lock_restore` in hyprland.lua. Beware: the crash-warning overlay can outlive the actual lock state (the session may already be unlocked).
 - ddcutil VCP writes cost monitor NVRAM cycles — keep slider drags
   human-paced; the Fn keys use NO_VERIFY (single write).
+- **ddcutil-service caches its display map from first activation** — it can
+  race the monitor's boot handshake, enumerate an **empty** map, and then
+  serve `status -3020 DDCRC_INVALID_DISPLAY` forever (6,830 failed calls
+  over one boot here; keys silently dead because `busctl` **exits 0** on
+  those — the error rides inside the reply). Validate the reply's status
+  field (2nd-to-last word, `0` = OK), never the exit code. Self-heal:
+  `busctl --user call com.ddcutil.DdcutilService /com/ddcutil/DdcutilObject
+  com.ddcutil.DdcutilInterface Detect u 0`, then retry — built into
+  brightness-step and the slider's set path; the slider's 2s poll
+  deliberately never Detects (it would probe-loop on an undocked laptop).
+  Drop the workaround when upstream self-recovers (UPSTREAM.md).
+- **Router DNS serves flat names, never `.lan` FQDNs** —
+  `Brother-L8690CDW-ClemJul` resolves (→ 192.168.63.30), `….lan` doesn't;
+  avahi/mDNS is deliberately off. If the flat name ever flakes after a
+  router reboot: `/etc/hosts` pin, or a DHCP reservation for `.30`. The
+  scanner entry pins the IPv4 directly (print.md).
+- **`ghostscript` is an optdep of cups-filters — driverless printing dies
+  with `gstoraster filter failed` without it** (plus `gsfonts`). Failed
+  jobs park in the queue: `cancel <queue>-<id>` before reprinting.
+- **sane-airscan ignores `~/.config/sane.d/`** — only `/etc/sane.d/airscan.conf`
+  counts, and that file is package-owned and NOT in the backup array:
+  package upgrades silently clobber it → re-install from `.root/` (that
+  pattern exists for exactly this class of problem).
+- **hyprlock fail-locked the account via Arch's login chain** — stock
+  `auth include login` → system-auth's pam_faillock (defaults: 3 fails
+  within 15 min → 10-min lockout of the *correct* password, account-wide
+  across hyprlock/TTY/sudo). Fixed with the pam_unix-only stack in
+  `.root/etc/pam.d/hyprlock`; `faillock --user cjmnuss` shows state,
+  `sudo faillock --user cjmnuss --reset` clears it. Sudo/TTY still
+  faillock: fumbling sudo 3× has the same 10-min lockout (accepted —
+  the break-glass is the reset command or a reboot → autologin).
+- **A logged-in spare VT is a standing lockscreen bypass** — 2026-11-02:
+  a days-old tty2 session allowed a wedged hyprlock to be killed from its
+  shell, no password asked. (The 08:27:56 "hyprlock crash" in coredumpctl
+  is that deliberate kill — SIGABRT — not a bug: kill -6/ABRT leaves a
+  core that looks like a crash later; **kill -9 leaves no core** — use it
+  for deliberate kills so the forensics stay honest.) Rule: log out of
+  spare VTs; the rescue path for a wedged lock screen is a *fresh* tty
+  login (password-gated — a rescue, not a bypass), then kill hyprlock.
+- **Firewall = plain nftables** (`/etc/nftables.conf`, source in `.root/`):
+  default-deny inbound, outbound free — global-IPv6 networks make the laptop
+  directly addressable, so keep it. The config owns exactly one table and has
+  **no `flush ruleset`** on purpose: reloads must not nuke docker/kind's
+  ip-family rules in the same netns (reload is idempotent via
+  `destroy table inet filter` first). FORWARD is policy-accept: not a router,
+  and a drop policy on the same hook would double-block docker's FORWARD
+  accepts. Unsolicited mDNS stays blocked (one-liner in the file if discovery
+  is ever wanted).
 - **cliphist v0.7.0 silently ignores unknown flags** — `cliphist wipe -h`
   is a full wipe (learned the hard way). Probe capabilities with
   `-db-path` on a scratch DB, never the live one. Upstream master (merged,
@@ -115,6 +168,18 @@ qemu + OVMF, same ISO version the USB carries).
   returns 0 for a user unit, and `kill -9 0` signals your own process group —
   the shell dies mid-command. Guard pid reads (`[ "$pid" -gt 0 ]`) and remember
   the `--user` scope.
+- **`sudo systemctl --user …` never works**: sudo's env-reset strips
+  `$DBUS_SESSION_BUS_ADDRESS` and `$XDG_RUNTIME_DIR`, so systemctl can't
+  reach the user bus ("Failed to connect to user scope bus…"). User units
+  never need sudo — plain `systemctl --user`. And ddcutil-service isn't a
+  unit at all: it's D-Bus auto-activated — `pkill -x ddcutil-service` plus
+  any busctl call respawns it fresh.
+- **gpg-agent preset passphrases are capped by `max-cache-ttl`** (2h default) —
+  overnight suspends burned them, which is why gpg-unlock kept needing re-runs.
+  The gpg-preset-passphrase(1) "don't expire" wording is misleading; the TTL
+  cap wins (and a SIGHUP/`gpgconf --reload gpg-agent` flushes presets too —
+  re-run gpg-unlock after changing agent options). Raised to 30d in
+  `~/.gnupg/gpg-agent.conf` ≈ "until reboot"; still RAM-only.
 - Compose key = **Caps Lock** (Caps + ' + e → é). Works in GTK apps only
   thanks to the uwsm env above; Chromium/Qt do their own.
 - `hyprmoncfg-monitors.lua` is intentionally NOT chezmoi-managed — the

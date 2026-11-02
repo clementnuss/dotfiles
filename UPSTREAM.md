@@ -81,6 +81,40 @@ the entry once upstream ships it and drop the local workaround.
   draft in the Issue drafts section.
   https://github.com/bugaevc/wl-clipboard
 
+- **ddcutil-service — stale/empty display map, no self-recovery.**
+  The daemon enumerates displays once at D-Bus activation, races the
+  monitor's boot handshake (here: empty map one second after activation,
+  then 6,830 failed calls over the whole boot), and never re-detects —
+  every Get/SetVcp keeps answering status -3020 DDCRC_INVALID_DISPLAY
+  (with busctl still exiting 0) until a forced `Detect` call. Ask: retry
+  detection on demand, or invalidate on connectivity events.
+  Local workaround: brightness-step and the slider set path force Detect
+  and retry once (AGENTS.md gotchas); drop when fixed.
+  https://github.com/digitaltrails/ddcutil-service
+
+- **sane-airscan — no user-level config.** airscan reads only
+  /etc/sane.d/airscan.conf; sane-backends itself supports
+  $XDG_CONFIG_HOME/sane.d, and a root-owned file for a per-user scanner
+  entry is overkill. Ask: honor the user config path too.
+  Local consequence: the entry is root-side via `.root/` (print.md).
+  https://github.com/alexpevzner/sane-airscan
+
+- **cups-filters — ghostscript optdep makes driverless printing fail cryptically.**
+  Every driverless queue that rasterizes dies with `gstoraster filter
+  failed` until the optional ghostscript dependency is installed; the
+  error names the filter, not the missing dep. Ask: hard dependency, or
+  an actionable log line.
+  https://github.com/OpenPrinting/cups-filters
+
+- **hyprlock — stock PAM example inherits the whole login stack.**
+  The shipped /etc/pam.d/hyprlock is `auth include login`; on distros
+  where system-auth carries pam_faillock (Arch: deny=3, unlock_time=600),
+  three fumbled unlock attempts DOS the owner account-wide for 10
+  minutes. A lockscreen policy and a login policy shouldn't share a
+  stack. Ask: ship or document a minimal pam_unix-only example for
+  lock screens.
+  https://github.com/hyprwm/hyprlock
+
 ## Already reported upstream (watch, drop workarounds when fixed)
 
 - **hyprlock — SIGABRT on `dpms off` while locked.**

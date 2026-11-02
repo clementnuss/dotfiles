@@ -1,0 +1,24 @@
+[Unit]
+# udiskie — removable-media automounter (USB sticks, SD cards), the session
+# client of the udisks2 daemon: every hotplug (and devices already present at
+# startup) gets mounted to /run/media/<user>/<label> with the user's uid, so
+# vfat files are owned by cjmnuss, never root. Internal disks are excluded by
+# udiskie's built-in !is_external rule — the nvme (incl. the ESP) never
+# automounts. Runs as a systemd user service, hypridle-style: a manually
+# started instance (2026-11-02) died silently with a broken env — no session
+# bus, no error anywhere, card just wouldn't mount. Flags are explicit
+# (--automount --notify) rather than relying on defaults: mount/unmount
+# toasts surface through omni-shell's notification service. Lifecycle follows
+# the desktop session (started with it, stopped on logout) — deliberately,
+# since automounting is a desktop nicety, not a machine function.
+Description=udiskie — removable-media automounter (udisks2 client)
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/udiskie --automount --notify
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=graphical-session.target

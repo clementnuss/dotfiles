@@ -40,6 +40,7 @@ OFFICIAL_PACKAGES=(
     k9s
     kubectl
     nodejs      # Mason npm-based LSPs/formatters: vtsls, yamlls, jsonls, prettier
+    nftables    # firewall ruleset (.root/etc/nftables.conf)
     npm
     rbw
     rclone
@@ -54,10 +55,13 @@ OFFICIAL_PACKAGES=(
     bluez-utils
     brightnessctl
     btop
+    cups        # print server; socket-activated (print.md)
     ddcutil
     ffmpeg      # yazi video thumbnails + metadata (video.lua calls ffmpeg/ffprobe)
     fuzzel
+    ghostscript # print: gstoraster needs it — optdep of cups-filters, easy to miss
     ghostty
+    gsfonts     # print: ghostscript fonts
     gpu-screen-recorder
     grim
     hypridle
@@ -73,11 +77,15 @@ OFFICIAL_PACKAGES=(
     pulsemixer
     python-gobject
     rofimoji
+    sane-airscan # scan: driverless eSCL/WSD backend (print.md)
     satty
+    simple-scan  # scan: GTK frontend
     slurp
     sof-firmware
     swaybg
     ttf-jetbrains-mono-nerd
+    udiskie     # removable-media automount client (udisks2): mounts to /run/media/<user>/<label>
+    udisks2     # storage daemon; mounts with the requesting user's uid (vfat uid=1000)
     wl-clipboard
     wireplumber
     wtype
