@@ -32,8 +32,8 @@ qemu + OVMF, same ISO version the USB carries).
 |---|---|---|
 | Hyprland (Lua config) | `~/.config/hypr/hyprland.lua` | binds, input (`compose:caps`), misc (Latte bg color, no animations, `focus_on_activate` so xdg-open'd files steal focus, `allow_session_lock_restore`), autostart. The `dofile` include from hyprmoncfg **must stay last** |
 | hyprlock | `~/.config/hypr/hyprlock.conf` | required — v0.9.6 does NOT fall back to /usr/share |
-| hypridle | `~/.config/hypr/hypridle.conf` + `~/.config/systemd/user/hypridle.service` | dim 2.5min, lock 5min, suspend 30min. All listeners respect systemd inhibitors. Runs as a **supervised systemd user service** (Restart=always) — an autostart line left it silently dead once (2026-10-27, after the hyprlock SIGABRT cascade); now a crash is a 3s respawn |
-| kanata | `~/.config/kanata/main.kbd` + `~/.config/systemd/user/kanata.service` | home-row mods (a/s/d/f = ctrl/alt/meta/shift, mirrored on j/k/l/;). systemd user service (`default.target`). Compose stays with Hyprland's xkb `compose:caps` — kanata no longer does compose (mac setup removed). Needs uinput access: `.root/` udev rule + `input`/`uinput` groups (see `.root/README.md`) |
+| hypridle | `~/.config/hypr/hypridle.conf` + `~/.config/systemd/user/hypridle.service` + `~/.local/bin/idle-guard` | dim 2.5min; **5min: docked (external DP/HDMI) → screen off, no lock (coffee-proof); portable → lock** — hypridle has no conditional config, so idle-guard decides at fire time; 20min: docked lock (screen wakes first); suspend 30min. All listeners respect systemd inhibitors (caffeine tile). Runs as a **supervised systemd user service** (Restart=always) — an autostart line left it silently dead once (2026-10-27, after the hyprlock SIGABRT cascade); now a crash is a 3s respawn |
+| kanata | `~/.config/kanata/main.kbd` + `~/.config/systemd/user/kanata.service` | home-row mods (a/s/d/f = ctrl/alt/meta/shift, mirrored on j/k/l/;). systemd user service (`default.target`). Hooks ONLY the internal keyboard via `linux-dev-names-include` **whitelist** — the old exclude list leaked the Kyria's Consumer/System-Control interfaces and the whole Unifying set (the MX Keys was getting home-row mods!). Compose stays with Hyprland's xkb `compose:caps` — kanata no longer does compose (mac setup removed). Needs uinput access: `.root/` udev rule + `input`/`uinput` groups (see `.root/README.md`) |
 | omni-shell (quickshell) | `~/.config/omni-shell/config.json` (+`extensions/`) | bar, control center, toasts, notifications. Launched via autostart **with the shim PATH** (see gotchas) |
 | omni-launcher | `~/.config/omni-launcher/config.json` | SUPER+D / SUPER+Space toggle |
 | caffeine tile | `~/.config/omni-shell/extensions/caffeine.qml` | "Keep always on": toggles a `sleep:idle` systemd inhibitor (blocks suspend + all hypridle actions) |
@@ -60,7 +60,7 @@ qemu + OVMF, same ISO version the USB carries).
 - getty@tty1 autologin override — **installed** ✓
 - `/etc/modules-load.d/i2c-dev.conf` — **installed** ✓
 - kanata udev rule + uinput module-load — **installed** ✓
-- `/etc/nftables.conf` firewall — **pending install** (see `.root/README.md`)
+- `/etc/nftables.conf` firewall — **installed** ✓
 
 ## Operational gotchas (learned the hard way)
 
@@ -72,7 +72,7 @@ qemu + OVMF, same ISO version the USB carries).
 - A quickshell watcher dies silently if a watched config file is missing at
   launch — recreate the file, then restart the shell.
 - hyprlock CRIT-exits without a user config; hypridle the same pattern.
-- **hyprlock 0.9.6 SIGABRTs on `dpms off` while locked** (hyprwm/hyprlock#984/#991/#953) — hypridle deliberately has NO dpms listener; the 30min suspend darkens the screen instead. Recovery from a TTY: `hyprctl eval 'hl.clear_crashed_lockscreen()'`, or just re-run `hyprlock` — allowed by `allow_session_lock_restore` in hyprland.lua. Beware: the crash-warning overlay can outlive the actual lock state (the session may already be unlocked).
+- **hyprlock 0.9.6 SIGABRTs on `dpms off` while locked** (hyprwm/hyprlock#984/#991/#953) — invariant since 2026-11-02: hypridle's dpms-off (idle-guard docked branch, 5min) runs **unlocked only**, and every lock path (20min docked listener, after_sleep_cmd) wakes the screen first. Suspend darkens the screen by sleeping. Recovery from a TTY: `hyprctl eval 'hl.clear_crashed_lockscreen()'`, or just re-run `hyprlock` — allowed by `allow_session_lock_restore` in hyprland.lua. Beware: the crash-warning overlay can outlive the actual lock state (the session may already be unlocked).
 - ddcutil VCP writes cost monitor NVRAM cycles — keep slider drags
   human-paced; the Fn keys use NO_VERIFY (single write).
 - **ddcutil-service caches its display map from first activation** — it can
@@ -122,7 +122,9 @@ qemu + OVMF, same ISO version the USB carries).
   `destroy table inet filter` first). FORWARD is policy-accept: not a router,
   and a drop policy on the same hook would double-block docker's FORWARD
   accepts. Unsolicited mDNS stays blocked (one-liner in the file if discovery
-  is ever wanted).
+  is ever wanted). `systemctl is-active nftables` reports **inactive even when
+  loaded** — the unit is oneshot without RemainAfterExit; the ruleset itself
+  is the ground truth (`sudo nft list table inet filter`).
 - **cliphist v0.7.0 silently ignores unknown flags** — `cliphist wipe -h`
   is a full wipe (learned the hard way). Probe capabilities with
   `-db-path` on a scratch DB, never the live one. Upstream master (merged,

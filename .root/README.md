@@ -148,7 +148,9 @@ Install (package `nftables` is in the package script):
       /etc/nftables.conf
     sudo systemctl enable --now nftables
 
-Verify:
+Verify (the service is a oneshot without RemainAfterExit — `systemctl
+is-active nftables` reports inactive even with the rules loaded; the
+ruleset is the ground truth):
 
     sudo nft list table inet filter
 
