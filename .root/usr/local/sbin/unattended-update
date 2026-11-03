@@ -1,0 +1,68 @@
+#!/bin/sh
+# Weekly unattended Arch update — the honest implementation of Drata's
+# "auto-update" control. Arch has NO supported unattended-upgrade
+# mechanism (unlike Debian's unattended-upgrades), so this is a guarded
+# approximation: checkupdates-gated, keyring FIRST (classic breakage
+# prevention), then the full upgrade; the journal is the audit evidence
+# and the outcome toasts either way. Deliberately EXCLUDED: AUR/yay
+# builds — unattended PKGBUILD execution is a code-execution risk and
+# AUR packages need human eyes. News-level manual interventions won't
+# be read — a failure toasts and the journal has the transcript.
+# Post-run smoke check: failed units (systemctl --failed) upgrade the
+# success toast to critical, so "applied but broke something live"
+# surfaces within minutes.
+# See .root/README.md ("Weekly system update") and AGENTS.md.
+
+[ "$(id -u)" -eq 0 ] || { echo 'must run as root (systemd unit)'; exit 1; }
+
+notify() { # $1 urgency, $2 title, $3 body
+    for BUS in /run/user/*/bus; do
+        [ -S "$BUS" ] || continue
+        U=${BUS#/run/user/}; U=${U%/bus}
+        NAME=$(getent passwd "$U" | cut -d: -f1)
+        [ -n "$NAME" ] || continue
+        runuser -u "$NAME" -- env DBUS_SESSION_BUS_ADDRESS="unix:path=$BUS" \
+            notify-send -u "$1" -i software-update "$2" "$3"
+    done
+}
+
+command -v checkupdates >/dev/null || {
+    notify critical 'System update failed' 'checkupdates (pacman-contrib) missing - see: journalctl -u unattended-update'
+    exit 1
+}
+
+PENDING=$(checkupdates 2>/dev/null)
+RC=$?
+# checkupdates exit codes: 0 = updates available, 2 = none, 1 = error
+if [ "$RC" -eq 2 ]; then
+    echo 'no updates pending - up to date'
+    exit 0
+fi
+if [ "$RC" -ne 0 ]; then
+    notify critical 'System update failed' 'checkupdates errored - see: journalctl -u unattended-update'
+    exit 1
+fi
+
+COUNT=$(printf '%s\n' "$PENDING" | grep -c .)
+echo "pending: $COUNT packages:"
+echo "$PENDING"
+
+pacman -Sy archlinux-keyring --needed --noconfirm || {
+    notify critical 'System update failed' 'keyring refresh failed - see: journalctl -u unattended-update'
+    exit 1
+}
+pacman -Syu --noconfirm || {
+    notify critical 'System update failed' 'upgrade failed - see: journalctl -u unattended-update'
+    exit 1
+}
+
+PACNEW=$(find /etc -name '*.pacnew' 2>/dev/null | wc -l)
+FAILED=$(systemctl --failed --no-legend --plain 2>/dev/null | grep -c .)
+BODY="applied $COUNT package updates"
+[ "$PACNEW" -gt 0 ] && BODY="$BODY - $PACNEW .pacnew config(s) need pacdiff"
+if [ "$FAILED" -gt 0 ]; then
+    BODY="$BODY - WARNING: $FAILED failed unit(s): systemctl --failed"
+    notify critical 'System updated - units failing' "$BODY"
+else
+    notify normal 'System updated' "$BODY"
+fi

@@ -1,0 +1,38 @@
+#!/bin/sh
+# Drata evidence: full-disk-encryption proof, transcript-style (same shape
+# as proof-antivirus — each command echoed before its output, so one
+# screenshot shows what was run and what it returned). The LUKS partition
+# and its active mapping are auto-detected, so this works on any machine
+# the dotfiles deploy to; a machine with no LUKS says so loudly instead of
+# screenshotting something misleading. luksDump/status need sudo (header
+# and mapper state are root-readable only) — run interactively.
+# No set -e: evidence must show reality, including absences.
+#
+# Usage: proof-encryption
+
+printf '========== LUKS / Drata evidence — %s ==========\n' "$(hostname)"
+
+printf '$ date\n'; date
+
+LUKS_DEV=$(lsblk -rnpo NAME,TYPE,FSTYPE | awk '$3 == "crypto_LUKS" { print $1; exit }')
+if [ -z "$LUKS_DEV" ]; then
+    echo '!! no crypto_LUKS partition found on this machine'
+    printf '===========================================================\n'
+    exit 1
+fi
+
+printf '$ lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS\n'
+lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS
+
+printf '$ sudo cryptsetup luksDump %s\n' "$LUKS_DEV"
+sudo cryptsetup luksDump "$LUKS_DEV"
+
+LUKS_MAP=$(lsblk -rno NAME,PKNAME | awk -v d="${LUKS_DEV##*/}" '$2 == d { print $1; exit }')
+if [ -n "$LUKS_MAP" ]; then
+    printf '$ sudo cryptsetup status %s\n' "$LUKS_MAP"
+    sudo cryptsetup status "$LUKS_MAP"
+else
+    echo '!! no active mapping found (volume not unlocked?)'
+fi
+
+printf '===========================================================\n'
