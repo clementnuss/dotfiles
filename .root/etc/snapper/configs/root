@@ -1,0 +1,87 @@
+# snapper config "root" — btrfs rollback safety net for unattended updates.
+# Managed as a FULL FILE from the dotfiles repo (same doctrine as clamd.conf):
+# edit repo → `sudo install -m 600` over → verify. Snapper reads this file on
+# every operation — no daemon restart exists or is needed.
+# Base: /usr/share/snapper/config-templates/default shipped with snapper
+# 0.13.2, i.e. what `snapper -c root create-config /` generates.
+# Deliberate deltas from that template — everything below is VERBATIM except:
+#   NUMBER_LIMIT     50 → 20 : ~5 weekly unattended-update cycles of pre/post
+#                      pairs = the rollback window; aged-out pairs are gone
+#   TIMELINE_CREATE yes → no : pacman pre/post (snap-pac hooks) is the only
+#                      change vector on this machine — chezmoi owns config
+#                      provenance, kopia owns home. Timeline would re-record
+#                      static state hourly. Cost: no point-in-time recovery
+#                      for stray non-pacman changes to /.
+# Cleanup: snapper-cleanup.timer (hourly, lightweight pruning pass) prunes
+# by COUNT; qgroups stay off
+# (SPACE_LIMIT/FREE_LIMIT below are inert) — one less moving part at 894G
+# free. Kernel pairs get important=yes via snap-pac.ini → survive longer
+# (NUMBER_LIMIT_IMPORTANT). Honest scoping (ESP outside the snapshot domain,
+# systemd-boot has no snapshot boot menu): .root/README.md "Snapshots".
+
+# subvolume to snapshot
+SUBVOLUME="/"
+
+# filesystem type
+FSTYPE="btrfs"
+
+
+# btrfs qgroup for space aware cleanup algorithms
+QGROUP=""
+
+# fraction or absolute size of the filesystems space the snapshots may use
+SPACE_LIMIT="0.5"
+
+# fraction or absolute size of the filesystems space that should be free
+FREE_LIMIT="0.2"
+
+
+# Whether snapshot numbers should be all-time unique. If set to yes, snapshot
+# numbers are not reused even after snapshots are deleted.
+UNIQUE_NUMBERS="yes"
+
+
+# users and groups allowed to work with config
+ALLOW_USERS=""
+ALLOW_GROUPS=""
+
+# sync users and groups from ALLOW_USERS and ALLOW_GROUPS to .snapshots
+# directory
+SYNC_ACL="no"
+
+
+# start comparing pre- and post-snapshot in background after creating
+# post-snapshot
+BACKGROUND_COMPARISON="yes"
+
+
+# run hourly number cleanup
+NUMBER_CLEANUP="yes"
+
+# limit for number cleanup
+NUMBER_MIN_AGE="3600"
+NUMBER_LIMIT="20"
+NUMBER_LIMIT_IMPORTANT="10"
+
+
+# create hourly snapshots
+TIMELINE_CREATE="no"
+
+# cleanup hourly snapshots after some time
+TIMELINE_CLEANUP="yes"
+
+# limits for timeline cleanup
+TIMELINE_MIN_AGE="3600"
+TIMELINE_LIMIT_HOURLY="10"
+TIMELINE_LIMIT_DAILY="10"
+TIMELINE_LIMIT_WEEKLY="0"
+TIMELINE_LIMIT_MONTHLY="10"
+TIMELINE_LIMIT_QUARTERLY="0"
+TIMELINE_LIMIT_YEARLY="10"
+
+
+# cleanup empty pre-post-pairs
+EMPTY_PRE_POST_CLEANUP="yes"
+
+# limits for empty pre-post-pair cleanup
+EMPTY_PRE_POST_MIN_AGE="3600"
