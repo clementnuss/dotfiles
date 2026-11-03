@@ -1,0 +1,31 @@
+[Unit]
+# drata-agent — compliance reporter (Drata Agent, AUR pkg; Electron tray app
+# + bundled osqueryi). Runs as a supervised systemd user service, ghostty /
+# hypridle / udiskie style, because the package ships NO autostart mechanism
+# on Linux (menu .desktop only) and this session has no XDG-autostart
+# processor anyway (Arch systemd ships no xdg-autostart generator; uwsm
+# doesn't implement one — ~/.config/autostart/ is decorative here).
+# The agent's own "launch at login" toggle is broken on Arch: Electron
+# setLoginItemSettings wrote ~/.config/autostart/electron.desktop with
+# Exec = bare system electron (process.execPath is the SYSTEM electron on
+# Arch, so the app.asar argument was lost) — junk, deleted 2026-11-03;
+# it may reappear if the in-app toggle is ever flipped (leave it off).
+# Supervision is deliberate for a compliance agent: a silent crash gets
+# revived in 3s (Restart=always) instead of quietly leaving the device
+# dark to Drata. uwsm imports the compositor env (WAYLAND_DISPLAY, session
+# bus) into the user manager, so the ozone-wayland Electron app finds its
+# display here — same reason udiskie/hypridle work as units.
+# Deliberate cost: PartOf=graphical-session — the agent does NOT run in
+# pure-tty sessions (Drata would see the device offline then); acceptable
+# while all real usage is the graphical session.
+Description=drata-agent — Drata compliance agent (Electron tray app)
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/drata-agent
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=graphical-session.target

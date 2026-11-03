@@ -115,6 +115,21 @@ the entry once upstream ships it and drop the local workaround.
   lock screens.
   https://github.com/hyprwm/hyprlock
 
+- **drata-agent — "launch at login" toggle writes a broken autostart
+  entry on Arch.** Electron's `setLoginItemSettings` uses
+  `process.execPath`, which on Arch is the SYSTEM electron
+  (`/usr/lib/electron44/electron` via the wrapper), so the generated
+  `~/.config/autostart/electron.desktop` runs bare electron with no
+  app — the agent never starts; and the file is generically named
+  "electron", hiding its origin. Arch sessions also lack any
+  XDG-autostart processor (no generator in Arch systemd, none in uwsm),
+  so even a correct entry would never launch on Hyprland/uwsm. Ask
+  (AUR + upstream): ship a systemd user unit like ghostty's
+  `app-com.mitchellh.ghostty.service`
+  (`WantedBy=graphical-session.target`) — the session's real autostart
+  mechanism — plus crash supervision for free. Workaround:
+  `drata-agent.service` in the dotfiles.
+
 ## Already reported upstream (watch, drop workarounds when fixed)
 
 - **hyprlock — SIGABRT on `dpms off` while locked.**
@@ -267,3 +282,56 @@ the entry once upstream ships it and drop the local workaround.
 > cost real debugging time before the format requirement was identified.
 > Either accepting 6-digit values (alpha = ff) or emitting a one-line warning
 > on invalid color lengths would prevent the silent fallback.
+
+### drata-agent (AUR) — broken "launch at login" on Arch
+
+> **Title: "Launch at login" writes a broken autostart entry on Arch**
+>
+> drata-agent 3.9.0-1, Arch, Hyprland session started via uwsm. With the
+> agent's "launch at login" setting enabled, it wrote:
+>
+> ```
+> $ cat ~/.config/autostart/electron.desktop
+> [Desktop Entry]
+> Type=Application
+> Version=1.0
+> Name=electron
+> Comment=electronstartup script
+> Exec=/usr/lib/electron44/electron
+> StartupNotify=false
+> Terminal=false
+> ```
+>
+> Two separate problems:
+>
+> 1. `Exec` is `process.execPath` — on Arch that's the SYSTEM electron
+>    binary (the package runs `electron /usr/lib/drata-agent/app.asar`
+>    via /usr/bin/drata-agent), so the entry launches bare electron with
+>    no app at all. The agent never starts, and the file is named
+>    "electron", so nothing points back to it.
+> 2. Even a correct `~/.config/autostart/*.desktop` would never launch on
+>    this session: Arch's systemd doesn't ship
+>    systemd-xdg-autostart-generator (Debian carries it as a patch), and
+>    uwsm doesn't process XDG autostart either.
+>
+> The session's real autostart mechanism on Arch is a systemd user unit
+> bound to graphical-session.target — ghostty ships exactly this
+> (app-com.mitchellh.ghostty.service). Suggesting the package ship:
+>
+> ```
+> [Unit]
+> Description=Drata Agent
+> PartOf=graphical-session.target
+> After=graphical-session.target
+>
+> [Service]
+> ExecStart=/usr/bin/drata-agent
+> Restart=on-failure
+>
+> [Install]
+> WantedBy=graphical-session.target
+> ```
+>
+> That also gets crash supervision for free — a died agent restarts
+> instead of quietly leaving the device dark in Drata. (Running this
+> unit as a local workaround since 2026-11-03.)
