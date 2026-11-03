@@ -53,13 +53,18 @@ qemu + OVMF, same ISO version the USB carries).
 | printing | CUPS queue `MFC-L8690CDW` + `cups.socket` | driverless IPP Everywhere to the Brother MFC-L8690CDW (`ipp://Brother-L8690CDW-ClemJul/ipp/print`); system default via /etc/cups/lpoptions; web UI :631 auth = PAM/wheel (no cupsd accounts, no edits made). **ghostscript is load-bearing** (optdep of cups-filters). Full setup + recovery: `print.md` |
 | scanning | scan-to-FTP from the printer (primary); sane-airscan + simple-scan (optional pull-scan) | **Primary: scan-to-FTP** — printer-initiated, configured on the MFC's console, nothing on this machine. PC pull-scan works **zero-config** (airscan built-in WS-Discovery, no avahi, proven by a live test scan); the deterministic WSD/IPv4 entry is archived in `.root/` but NOT installed — add it only if discovery ever flakes. airscan ignores `~/.config/sane.d/`; the /etc file is package-owned and upgrade-clobbered. Verify: `scanimage -L` |
 | removable media | udisks2 + udiskie (`systemd/user/udiskie.service`) | automounts USB/SD to `/run/media/cjmnuss/<label>` **as the user's uid** (vfat uid=1000 — files owned by you, no root-owned card); internal disks excluded by udiskie's built-in `!is_external` rule (nvme/ESP never automount); devices already present at startup get mounted too; explicit `--automount --notify` (mount toasts via omni-shell). Runs as a supervised systemd user service, hypridle-style — a manually-started udiskie died silently with a broken env once. No config file; flags + defaults suffice. FAT labels matter: no label ⇒ UUID mountpoint (fix: `fatlabel`) |
+| system updates | `unattended-update.timer` (`.root/`) + `proof-updates` | **Drata "auto-update"**: weekly Sun 18:00, AC-only, guarded — checkupdates-gated, **keyring first**, full `pacman -Syu`, journal = audit evidence, outcome toast always (with `.pacnew` count + post-run failed-units smoke check), fires **before** the 20:00 AV scan so the fresh system is scanned same evening. AUR/yay deliberately excluded (unattended PKGBUILD = code-exec risk). Arch has no supported unattended mechanism — this is the honest guarded approximation (gotcha below) |
+| snapshots | snapper + snap-pac (`.root/etc/snapper/configs/root`, `.root/etc/snap-pac.ini`) | pre/post pair around EVERY pacman transaction (snap-pac 3 hooks, config "root"; pre hook AbortOnFail = uninsurable transactions abort); hourly count cleanup (`snapper-cleanup.timer`, 20 regular / 10 important); kernel pairs tagged important; timeline + boot snapshots + qgroups deliberately OFF (pacman = the change vector); **rollback = `sudo snapper rollback <n>` + reboot**; @home = kopia's domain. Scoping gotcha below; install/verify/undo + rollback test: `.root/README.md` |
 | hyprlock PAM | `/etc/pam.d/hyprlock` (`.root/`) | pam_unix-only stack replacing the stock `auth include login` — Arch's system-auth faillock (compiled defaults deny=3/unlock_time=600; faillock.conf fully commented) made 3 fumbled unlock attempts lock the **account** for 10 min: correct password refused at hyprlock, TTY and sudo alike (2026-11-02, hit for real). sudo/su/TTY keep faillock — the lockscreen is not a login surface (LUKS = data boundary, tty1 autologin = login path). Break-glass: `sudo faillock --user cjmnuss --reset`, or reboot → autologin. Install/undo + upgrade-pacnew note: `.root/README.md` |
+| AV (Drata) | clamav: `clamav-freshclam` + `clamav-daemon` services; weekly `clamav-scan.timer` (`.root/`) | compliance AV at near-zero cost: resident clamd (idle CPU ≈ 0; RAM holds the signature set), freshclam = conditional GET every 2h, weekly full scan **AC-only** (`ConditionACPower` — never on battery). **clamonacc deliberately off** — on-access is the real battery drainer and the control doesn't need it; Drata's device page is the ground truth, revisit if it ever demands real-time. `NotifyClamd` auto-reloads clamd after DB updates; scan excludes live in the repo-managed **full clamd.conf** (`.root/etc/clamav/clamd.conf` — clamd has no conf.d/include; edit → re-install → restart clamd; pacnew to reconcile on package upgrades). Install order + EICAR verify: `.root/README.md`. Drata evidence: `~/.local/bin/proof-antivirus` — transcript-style proof block (installed/running/enabled/timer/DB freshness), `--eicar` adds the detection proof with self-cleaning. **Detection → critical toast**: scan unit `OnFailure=` → `clamav-notify` (`/usr/local/sbin`, `.root/`) classifies detections-vs-error from the journal and toasts via runuser — no sudoers, no VirusEvent |
+| containers | rootless podman + `podman-docker` CLI shim; kind via `KIND_EXPERIMENTAL_PROVIDER=podman` (zshrc) | daemonless fork/exec — no root, no docker socket (nothing ≡ root). pasta userspace networking: **never touches nftables** — needs the `tun` module at boot (`/etc/modules-load.d/tun.conf`, `.root/`). kind nodes run as user-namespace containers. Containers do NOT inherit the session: rbw/gpg-agent/Wayland sockets + `~` are invisible unless explicitly mounted — the mount list is the policy. Residual risk = kernel escape only; agent-sandbox escalation (gVisor `runsc` for that one container, or a minimal qemu VM for a disposable kernel — rootful podman inside is fine, the VM kernel is the boundary) is deliberate **phase 2**. **Storage**: all-btrfs machine → kernel overlay can't use btrfs as upperdir → `fuse-overlayfs` (`~/.config/containers/storage.conf`, chezmoi-managed); tax = image pulls + rootfs small-file writes (~2–3x); **named volumes + bind mounts bypass FUSE entirely** — hot caches belong in volumes. Escalation on measured pain: ext4 loop-image via `.root/` fstab (kernel overlay, native). The native btrfs graph driver is rootful-only (subvol ioctls are denied in userns) |
 
 ## Root-owned pieces → `.root/README.md`
 
 - getty@tty1 autologin override — **installed** ✓
 - `/etc/modules-load.d/i2c-dev.conf` — **installed** ✓
 - kanata udev rule + uinput module-load — **installed** ✓
+- `/etc/modules-load.d/tun.conf` (pasta/podman networking) — **pending install** (see `.root/README.md`)
 - `/etc/nftables.conf` firewall — **installed** ✓
 
 ## Operational gotchas (learned the hard way)
@@ -86,6 +91,61 @@ qemu + OVMF, same ISO version the USB carries).
   brightness-step and the slider's set path; the slider's 2s poll
   deliberately never Detects (it would probe-loop on an undocked laptop).
   Drop the workaround when upstream self-recovers (UPSTREAM.md).
+- **Weekly-scan triage (2026-11-03): "11 infected" = 11 explained, zero real** —
+  2 eicar test files (/tmp, deleted), 5 Txt.Exploit.CopyFail hits in the
+  owner's own CVE-research PoC repo, 4 Heuristics.Zip.OverlappingFiles
+  in klauspost/compress's upstream fuzz fixtures. Recurring known-benign
+  flags get ExcludePath'd (the research repo; Go module-cache `*.zip` —
+  extracted module code stays scanned); the seadrive cloud mount stays
+  IN scope (real ingress path). Alert fatigue is how AV dies: a weekly
+  "5 detections" toast that's always the same PoCs trains you to ignore
+  the real one. Scan noise is benign — "Not supported file type" on
+  sockets, `cli_realpath` warnings, clamav's own racing /tmp temp files;
+  "Total errors" ≠ detections.
+- **Scan time is scope, not speed (2026-11-03)**: first full scan 26 min
+  for ~900k files. Excluded (~451k → ~13 min, Drata-defensible):
+  lockfile-pinned dependency trees (node_modules 156k, go/pkg/mod 133k,
+  .pub-cache 37k, .cargo/registry 13k) and three zero-value cache
+  subtrees (.cache/kopia 65k — AES-encrypted backup chunks, byte-verified
+  ciphertext ClamAV cannot read; go-build 29k + gopls 18k — deterministic
+  artifacts of scanned source). Deliberately kept IN scope: chromium 64k
+  + yay 11k caches (real ingress: web content, AUR PKGBUILDs), all
+  system/source/data. Caveat: any excluded path is a possible malware
+  hideout — compensated by tool-owned high-churn dirs (kopia prunes, go
+  evicts), inert binaries without persistence hooks (hooks live in
+  scanned places: autostarts, rc files, systemd units), and the
+  clamonacc lever if the threat model ever escalates. Brute-force
+  alternative: `MaxThreads` in clamd.conf.
+- **Arch has no supported auto-update** — Drata's toggle presumes
+  Windows/macOS semantics. `unattended-update` is the guarded
+  approximation: checkupdates-gated (pacman-contrib), keyring-first,
+  AUR/yay excluded (unattended PKGBUILD = code-exec risk), failure
+  toast + journal transcript, `.pacnew` count in the success toast
+  (run pacdiff when it fires). Unattended upgrades still carry real
+  risk — news-level manual interventions won't be read; the true
+  safety net is btrfs snapshots (snapper — live since 2026-11-03, row
+  above).
+- **Snapshot domain scoping (snapper)** — snapshots cover @ only. The
+  ESP (kernel + initramfs, separate vfat partition) is OUTSIDE the
+  snapshot domain: rolling back @ after a kernel-updating Sunday can
+  pair old `/usr/lib/modules` with the new vmlinuz/initramfs — the
+  mismatch class. Rescue = ISO chroot + matching kernel reinstall;
+  cheap standing fix = add `linux-lts` as a second kernel (backlog).
+  systemd-boot has no snapshot boot menu (grub-btrfs is grub-only):
+  `snapper rollback` needs a bootable system — the unbootable class
+  stays with the Phase-3 ISO break-glass card. Timeline + boot
+  snapshots + qgroups deliberately off (pacman pre/post is the change
+  vector; chezmoi owns configs, kopia owns home).
+- **A detection makes `clamav-scan.service` end "failed" (exit 1)** —
+  that's clamdscan's documented exit code for "infected found", not a
+  broken unit; the FOUND lines in `journalctl -u clamav-scan` are the
+  evidence Drata wants. Detection-only by design: no `--move`/`--remove`
+  in the unit — nothing quarantines or deletes; a human triages. The
+  failure fires a **critical toast** since 2026-11-03
+  (`OnFailure=clamav-notify.service` → `/usr/local/sbin/clamav-notify`
+  → runuser → session bus, no sudoers entry, unlike the wiki's
+  VirusEvent recipe). Manual clamdscan runs do NOT toast — only the
+  weekly unit's failure.
 - **Router DNS serves flat names, never `.lan` FQDNs** —
   `Brother-L8690CDW-ClemJul` resolves (→ 192.168.63.30), `….lan` doesn't;
   avahi/mDNS is deliberately off. If the flat name ever flakes after a

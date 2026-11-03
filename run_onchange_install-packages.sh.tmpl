@@ -42,6 +42,9 @@ OFFICIAL_PACKAGES=(
     nodejs      # Mason npm-based LSPs/formatters: vtsls, yamlls, jsonls, prettier
     nftables    # firewall ruleset (.root/etc/nftables.conf)
     npm
+    podman              # rootless containers; no docker daemon ever (see AGENTS.md)
+    podman-docker       # docker CLI shim for scripts
+    fuse-overlayfs      # rootless layer store: kernel overlay can't sit on btrfs (all-btrfs machine)
     rbw
     rclone
     sops
@@ -55,6 +58,7 @@ OFFICIAL_PACKAGES=(
     bluez-utils
     brightnessctl
     btop
+    clamav      # AV for Drata compliance: freshclam + clamd + weekly AC-only scan (.root/README.md)
     cups        # print server; socket-activated (print.md)
     ddcutil
     ffmpeg      # yazi video thumbnails + metadata (video.lua calls ffmpeg/ffprobe)
@@ -69,6 +73,7 @@ OFFICIAL_PACKAGES=(
     hyprland
     networkmanager
     noto-fonts-emoji
+    pacman-contrib  # checkupdates: gates + evidences unattended-update (Drata auto-update)
     pipewire
     pipewire-alsa
     pipewire-audio
@@ -81,6 +86,8 @@ OFFICIAL_PACKAGES=(
     satty
     simple-scan  # scan: GTK frontend
     slurp
+    snap-pac  # pacman pre/post snapshot hooks (snapper config root; .root/README.md)
+    snapper   # count cleanup + rollback; timeline off by design (pacman = change vector)
     sof-firmware
     swaybg
     ttf-jetbrains-mono-nerd
