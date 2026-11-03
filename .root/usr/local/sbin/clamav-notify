@@ -1,0 +1,30 @@
+#!/bin/sh
+# clamav-scan.service OnFailure hook: turn a failed weekly AV scan into a
+# desktop toast (omni-shell's notification service). clamdscan exit codes:
+# 0 clean, 1 infected, 2 error — a "failed" unit can mean either, so this
+# classifies by counting FOUND lines in this run's journal window (48h:
+# the weekly cadence means any previous run's lines are >48h old) and
+# says which it was. Delivery: runuser reaches each logged-in user's
+# session bus with no sudoers changes (the Arch wiki's VirusEvent recipe
+# needs a NOPASSWD sudoers entry for the clamav user — deliberately
+# avoided; this path is root-run instead). Nobody logged in = no sockets
+# to deliver to = the journal remains the evidence, silently.
+
+FOUND=$(journalctl -u clamav-scan.service --since "-48h" --no-pager | grep -c " FOUND")
+
+if [ "$FOUND" -gt 0 ]; then
+    TITLE="Antivirus: ${FOUND} detection(s)"
+    BODY="ClamAV weekly scan found something - see: journalctl -u clamav-scan"
+else
+    TITLE="Antivirus scan failed"
+    BODY="No detections, but the scan errored - see: journalctl -u clamav-scan"
+fi
+
+for BUS in /run/user/*/bus; do
+    [ -S "$BUS" ] || continue
+    UID_NUM=${BUS#/run/user/}; UID_NUM=${UID_NUM%/bus}
+    USER_NAME=$(getent passwd "$UID_NUM" | cut -d: -f1)
+    [ -n "$USER_NAME" ] || continue
+    runuser -u "$USER_NAME" -- env DBUS_SESSION_BUS_ADDRESS="unix:path=$BUS" \
+        notify-send -u critical -i dialog-warning "$TITLE" "$BODY"
+done

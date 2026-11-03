@@ -1,0 +1,44 @@
+#!/bin/sh
+# Drata evidence: the AV proof block from .root/README.md, transcript-style —
+# each command is echoed before its output, so one screenshot (or a
+# `proof-antivirus | tee av.txt` text artifact) shows both what was run
+# and what it returned. No set -e on purpose: evidence must show reality,
+# including "inactive"/"disabled" states, not abort on them.
+# --eicar: additionally proves detection with the industry-standard
+# harmless test signature (sudo needed for the clamd socket; the file
+# is fetched to /tmp and deleted after — no residue for the weekly
+# scan to report).
+#
+# Usage: proof-antivirus [--eicar]
+
+printf '========== ClamAV / Drata evidence — %s ==========\n' "$(hostname)"
+
+printf '$ date\n'; date
+
+printf '$ pacman -Q clamav\n'; pacman -Q clamav
+
+printf '$ systemctl is-active clamav-freshclam clamav-daemon\n'
+systemctl is-active clamav-freshclam clamav-daemon
+
+printf '$ systemctl is-enabled clamav-freshclam clamav-daemon clamav-scan.timer\n'
+systemctl is-enabled clamav-freshclam clamav-daemon clamav-scan.timer
+
+printf '$ systemctl list-timers --no-pager clamav-scan.timer | head -3\n'
+systemctl list-timers --no-pager clamav-scan.timer | head -3
+
+printf '$ ls -l /var/lib/clamav/\n'; ls -l /var/lib/clamav/
+
+if [ "${1:-}" = "--eicar" ]; then
+    EICAR=/tmp/eicar.com
+    if curl -fsS https://secure.eicar.org/eicar.com -o "$EICAR" \
+        && grep -q EICAR-STANDARD "$EICAR"; then
+        printf '$ sudo clamdscan --multiscan --fdpass %s\n' "$EICAR"
+        sudo clamdscan --multiscan --fdpass "$EICAR"
+        printf '$ rm -f %s  # no residue for the weekly scan\n' "$EICAR"
+        rm -f "$EICAR"
+    else
+        echo '!! eicar download failed — detection test skipped'
+    fi
+fi
+
+printf '===========================================================\n'

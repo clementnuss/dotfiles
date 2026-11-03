@@ -1,0 +1,9 @@
+[Unit]
+# Fires the weekly AV scan — see clamav-scan.service (AC-only).
+
+[Timer]
+OnCalendar=Sun 20:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
