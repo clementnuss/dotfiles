@@ -65,7 +65,7 @@ qemu + OVMF, same ISO version the USB carries).
 - getty@tty1 autologin override — **installed** ✓
 - `/etc/modules-load.d/i2c-dev.conf` — **installed** ✓
 - kanata udev rule + uinput module-load — **installed** ✓
-- `/etc/modules-load.d/tun.conf` (pasta/podman networking) — **pending install** (see `.root/README.md`)
+- `/etc/modules-load.d/tun.conf` (pasta/podman networking) — **installed** ✓
 - `/etc/nftables.conf` firewall — **installed** ✓
 
 ## Operational gotchas (learned the hard way)
@@ -148,6 +148,18 @@ qemu + OVMF, same ISO version the USB carries).
   lost — a launcher that launches nothing, generically named "electron"
   (drata-agent did exactly this, 2026-11-03; junk file deleted — the
   in-app toggle would rewrite it, leave it off).
+- **TUI background autodetection (OSC 11) was dead inside tmux** — claude
+  code "detected a black background" on an all-Latte terminal: tmux doesn't
+  answer pane OSC 11 queries by default (needs the `background` terminal
+  feature, never auto-set for xterm-ghostty) and apps fall back to dark on
+  silence. Fix in tmux.conf: `set -as terminal-features
+  ',xterm-ghostty:background'` + `set -g allow-passthrough on`, then
+  **re-attach** (tmux probes the outer terminal at client attach; options
+  alone don't fire it). Probe from a pane: `printf '\e]11;?\a'` — a reply
+  like `\e]11;rgb:efef/f1f1/f5f5` (latte) means tmux answered; a reply in a
+  bare ghostty window only proves ghostty. OSC replies carry no newline —
+  a line-buffered `read` after the probe reads back empty (the reply
+  echoes then sits in the queue; C-u to clear).
 - **A detection makes `clamav-scan.service` end "failed" (exit 1)** —
   that's clamdscan's documented exit code for "infected found", not a
   broken unit; the FOUND lines in `journalctl -u clamav-scan` are the
