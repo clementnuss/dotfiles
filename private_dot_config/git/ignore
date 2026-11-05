@@ -1,0 +1,2 @@
+# Go telemetry written when HOME/XDG_CONFIG_HOME points at a repo (e.g. sandboxes)
+.config/go/

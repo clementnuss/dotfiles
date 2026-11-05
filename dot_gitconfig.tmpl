@@ -9,11 +9,7 @@
 [init]
 	defaultBranch = main
 [ghq]
-{{- if eq .profile "personal" }}
   root = ~/git
-{{- else}}
-  root = ~/repos
-{{- end }}
 
 [core]
     pager = delta
@@ -55,3 +51,7 @@
 [credential "https://github.com"]
 	username = clementnuss
 {{- end }}
+
+# VictoriaMetrics repos commit with the work identity (kept last so it wins)
+[includeIf "gitdir:~/git/github.com/VictoriaMetrics/"]
+	path = ~/.config/git/victoriametrics
