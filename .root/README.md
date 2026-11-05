@@ -416,7 +416,67 @@ its own table):
 
     sudo nft -f /etc/nftables.conf
 
-Undo:
+### LocalSend carve-out (mDNS + TCP 53317, home LAN only)
+
+LocalSend (AUR, AirDrop-style LAN transfer) needs two inbound classes —
+both scoped, costs named:
+
+- **Discovery** — mDNS peer announcements:
+  `ip daddr 224.0.0.251 udp sport 5353 udp dport 5353 accept`.
+  Multicast carries no conntrack reverse tuple, so announcements can't
+  ride the established rule. Outbound (our announcements/queries) was
+  already free via the output policy.
+- **Transfer** — the v2 HTTP/WebSocket API on tcp 53317, scoped by the
+  `localsend_nets` **set** (`192.168.0.0/16` by default), so the scope
+  is runtime-toggleable without editing rules:
+  `sudo localsend-mode <home|open|blocked|status>`
+  (`.root/usr/local/sbin/localsend-mode`).
+  - `home` = `192.168.0.0/16` (grew from /24 to /16 — the home network
+    spans subnets). Cost: ANY 192.168.x.x network the laptop joins is
+    inside home scope, hostile wifi on that range included.
+  - `open` = `0.0.0.0/0` — any peer on any network the laptop is
+    currently connected to. nftables has no "match my current subnet"
+    primitive, so "any connected network" is all-or-nothing. Cost: on
+    hostile wifi strangers reach the LocalSend API — LocalSend's own
+    require-PIN option is the compensating control.
+  - `blocked` = empty set — no inbound transfers at all (the chain's
+    drop policy takes over). Discovery stays: peers still see this
+    device (our announcements are outbound = free); full stealth would
+    need an output-side mDNS block — deliberate non-goal.
+  - open mode **self-reverts to home after 45min** (transient systemd
+    timer re-runs `localsend-mode home`); in-flight transfers survive
+    the revert (established conntrack). home and blocked are standing
+    modes — no auto-revert.
+  - reload and reboot reset to home — the conf file is the source of
+    truth; runtime edits are the toggle, reloads are the reset.
+  - v6-only peers are discoverable but can't transfer either way.
+
+Install (firewall + toggle):
+
+    sudo install -m 644 \
+      ~/.local/share/chezmoi/.root/etc/nftables.conf \
+      /etc/nftables.conf
+    sudo nft -c -f /etc/nftables.conf
+    sudo nft -f /etc/nftables.conf
+    sudo install -m 755 \
+      ~/.local/share/chezmoi/.root/usr/local/sbin/localsend-mode \
+      /usr/local/sbin/localsend-mode
+    sudo localsend-mode status
+
+Verify + toggle proof:
+
+    sudo localsend-mode open
+    sudo localsend-mode status
+    sudo localsend-mode blocked
+    sudo localsend-mode home
+
+(command blocks are comment-free on purpose — this zsh treats # as a
+glob in interactive lines, see AGENTS.md)
+
+Undo: delete the LocalSend blocks (mDNS rule, set, tcp rule) in
+`.root/etc/nftables.conf`, install, reload; remove the script.
+
+Undo (whole firewall):
 
     sudo systemctl disable --now nftables
     sudo nft destroy table inet filter

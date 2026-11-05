@@ -148,6 +148,14 @@ qemu + OVMF, same ISO version the USB carries).
   lost — a launcher that launches nothing, generically named "electron"
   (drata-agent did exactly this, 2026-11-03; junk file deleted — the
   in-app toggle would rewrite it, leave it off).
+- **Paste blocks must be comment-free** — zsh's interactive shell does
+  NOT do `#` comments (interactive_comments is off by default in zsh
+  and this config doesn't setopt it): an inline comment makes the
+  whole line die as `bad pattern: #` without executing (2026-11-05:
+  both nft reload lines silently skipped mid-install). Commentary
+  belongs outside the fence. (`setopt interactive_comments` would fix
+  the shell side — deliberately left to the user, paste robustness
+  shouldn't depend on the reader's shell options.)
 - **TUI background autodetection (OSC 11) was dead inside tmux** — claude
   code "detected a black background" on an all-Latte terminal: tmux doesn't
   answer pane OSC 11 queries by default (needs the `background` terminal
@@ -205,8 +213,20 @@ qemu + OVMF, same ISO version the USB carries).
   ip-family rules in the same netns (reload is idempotent via
   `destroy table inet filter` first). FORWARD is policy-accept: not a router,
   and a drop policy on the same hook would double-block docker's FORWARD
-  accepts. Unsolicited mDNS stays blocked (one-liner in the file if discovery
-  is ever wanted). `systemctl is-active nftables` reports **inactive even when
+  accepts. Unsolicited mDNS is accepted only as LocalSend peer
+  announcements (`ip daddr 224.0.0.251 udp sport 5353 udp dport 5353`) —
+  multicast has no conntrack reverse tuple, so it can't ride the
+  established rule — and LocalSend's transfer API (tcp 53317) is scoped
+  by the `localsend_nets` set: `192.168.0.0/16` by default (named cost:
+  ANY 192.168.x.x network the laptop joins is in scope — hostile wifi on
+  that range included); `sudo localsend-mode open` widens to any
+  connected network for 45min (auto-revert + toast; in-flight transfers
+  survive reverts), `blocked` empties the set (transfers fully closed,
+  device still announces); reload/boot resets to home — the file is
+  truth. Cost of open: hostile-wifi peers reach the LocalSend API —
+  LocalSend's require-PIN is the compensating control. v6-only peers are
+  discoverable but can't transfer.
+  `systemctl is-active nftables` reports **inactive even when
   loaded** — the unit is oneshot without RemainAfterExit; the ruleset itself
   is the ground truth (`sudo nft list table inet filter`).
 - **cliphist v0.7.0 silently ignores unknown flags** — `cliphist wipe -h`

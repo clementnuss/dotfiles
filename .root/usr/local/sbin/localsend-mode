@@ -1,0 +1,79 @@
+#!/bin/sh
+# localsend-mode [home|open|blocked|status] — toggle the LocalSend
+# inbound scope. Mutates the localsend_nets set in the RUNNING firewall
+# (inet filter); /etc/nftables.conf is untouched and stays the source of
+# truth: reload or boot resets to its default (home). No rules are
+# re-parsed at toggle time — that's why the scope is a set, not a rule.
+#   open    = 0.0.0.0/0: any peer on any network the laptop is
+#            currently connected to (nftables has no "my current
+#            subnet" match, so "any connected network" is all-or-nothing).
+#            Cost: on hostile wifi strangers reach the LocalSend API —
+#            LocalSend's own require-PIN option is the compensating
+#            control. Self-reverts to home after 45min via a transient
+#            systemd timer; in-flight transfers survive the revert
+#            (established conntrack).
+#   home    = 192.168.0.0/16 (the file default; grew from /24 to /16 for
+#            a multi-subnet home network). Named cost: ANY 192.168.x.x
+#            network the laptop joins is inside home scope — hostile
+#            wifi on that range included.
+#   blocked = empty set: all inbound transfers closed (the chain's drop
+#            policy takes over). Discovery stays: peers still see this
+#            device (our announcements are outbound = free) and we
+#            still see them (the mDNS accept rule is untouched); full
+#            stealth would need an output-side mDNS block — deliberate
+#            non-goal. Standing mode: no auto-revert.
+#   status  = print the current mode.
+# Toasts the result (clamav-notify pattern). See .root/README.md.
+
+[ "$(id -u)" -eq 0 ] || { echo 'must run as root: sudo localsend-mode <home|open|blocked|status>'; exit 1; }
+
+HOME_NET=192.168.0.0/16
+AUTO_OFF=45min
+
+notify() { # $1 = body — desktop toast via the user session bus
+    for BUS in /run/user/*/bus; do
+        [ -S "$BUS" ] || continue
+        U=${BUS#/run/user/}; U=${U%/bus}
+        NAME=$(getent passwd "$U" | cut -d: -f1)
+        [ -n "$NAME" ] || continue
+        runuser -u "$NAME" -- env DBUS_SESSION_BUS_ADDRESS="unix:path=$BUS" \
+            notify-send -u normal -i localsend "$1"
+    done
+}
+
+set_mode() { # $1 = element spec ('{ ... }'), empty = blocked (no add)
+    nft flush set inet filter localsend_nets
+    [ -n "$1" ] && nft add element inet filter localsend_nets "$1"
+}
+
+case "$1" in
+status)
+    RULES=$(nft list set inet filter localsend_nets 2>/dev/null)
+    if printf '%s' "$RULES" | grep -q '0\.0\.0\.0/0'; then
+        echo "localsend inbound: OPEN (any network; auto-reverts home)"
+    elif printf '%s' "$RULES" | grep -q '[0-9]/'; then
+        echo "localsend inbound: home LAN ($HOME_NET)"
+    else
+        echo "localsend inbound: BLOCKED (transfers closed; device still discoverable)"
+    fi
+    ;;
+open)
+    systemctl stop localsend-auto-off.timer 2>/dev/null   # re-open reschedules
+    set_mode '{ 0.0.0.0/0 }'
+    systemd-run --unit=localsend-auto-off --on-active=$AUTO_OFF --collect \
+        /usr/local/sbin/localsend-mode home
+    notify "LocalSend: open on this network — auto-closes in 45 min"
+    ;;
+home)
+    set_mode "{ $HOME_NET }"
+    notify "LocalSend: inbound back to home LAN (192.168/16)"
+    ;;
+blocked)
+    set_mode ""
+    notify "LocalSend: inbound blocked"
+    ;;
+*)
+    echo "usage: sudo localsend-mode <home|open|blocked|status>" >&2
+    exit 1
+    ;;
+esac
