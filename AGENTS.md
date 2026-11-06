@@ -295,8 +295,9 @@ qemu + OVMF, same ISO version the USB carries).
   thanks to the uwsm env above; Chromium/Qt do their own.
 - `hyprmoncfg-monitors.lua` is intentionally NOT chezmoi-managed — the
   daemon rewrites it.
-- The whole `.root/` directory is archive-only: chezmoi ignores dot-entries,
-  root installs them manually per `.root/README.md`.
+- chezmoi ignores the dot-entry `.root/`; `run_onchange_after_install-root-files.sh.tmpl`
+  sudo-installs its low-risk files on apply. PAM, the getty override,
+  clamd.conf, the snapper config and airscan.conf stay manual (`.root/README.md`).
 
 ## Packages
 

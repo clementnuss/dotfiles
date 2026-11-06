@@ -1,7 +1,5 @@
 [Unit]
-# Fires the weekly unattended update — see unattended-update.service.
-# Sun 18:00, before the 20:00 clamav-scan.timer; Persistent catches up
-# after downtime/battery, so misses self-heal on the next AC session.
+# before the 20:00 clamav scan; Persistent catches up after downtime
 
 [Timer]
 OnCalendar=Sun 18:00

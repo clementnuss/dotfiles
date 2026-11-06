@@ -1,29 +1,9 @@
 #!/bin/sh
-# localsend-mode [home|open|blocked|status] — toggle the LocalSend
-# inbound scope. Mutates the localsend_nets set in the RUNNING firewall
-# (inet filter); /etc/nftables.conf is untouched and stays the source of
-# truth: reload or boot resets to its default (home). No rules are
-# re-parsed at toggle time — that's why the scope is a set, not a rule.
-#   open    = 0.0.0.0/0: any peer on any network the laptop is
-#            currently connected to (nftables has no "my current
-#            subnet" match, so "any connected network" is all-or-nothing).
-#            Cost: on hostile wifi strangers reach the LocalSend API —
-#            LocalSend's own require-PIN option is the compensating
-#            control. Self-reverts to home after 45min via a transient
-#            systemd timer; in-flight transfers survive the revert
-#            (established conntrack).
-#   home    = 192.168.0.0/16 (the file default; grew from /24 to /16 for
-#            a multi-subnet home network). Named cost: ANY 192.168.x.x
-#            network the laptop joins is inside home scope — hostile
-#            wifi on that range included.
-#   blocked = empty set: all inbound transfers closed (the chain's drop
-#            policy takes over). Discovery stays: peers still see this
-#            device (our announcements are outbound = free) and we
-#            still see them (the mDNS accept rule is untouched); full
-#            stealth would need an output-side mDNS block — deliberate
-#            non-goal. Standing mode: no auto-revert.
-#   status  = print the current mode.
-# Toasts the result (clamav-notify pattern). See .root/README.md.
+# localsend-mode home|open|blocked|status: rewrite the localsend_nets set in the running ruleset.
+#   home    192.168.0.0/16 (file default; any 192.168.x.x network counts)
+#   open    0.0.0.0/0, auto-reverts to home after 45min (rely on LocalSend's PIN)
+#   blocked empty set; the device stays discoverable
+# A reload or boot resets to /etc/nftables.conf.
 
 [ "$(id -u)" -eq 0 ] || { echo 'must run as root: sudo localsend-mode <home|open|blocked|status>'; exit 1; }
 

@@ -1,20 +1,5 @@
-# hyprlock PAM stack — local password check only, no pam_faillock.
-#
-# Arch's stock file is "auth include login", which chains into system-auth
-# and its pam_faillock (compiled defaults, faillock.conf is all comments:
-# deny=3, fail_interval=900, unlock_time=600). Three fumbled attempts at
-# the lockscreen lock the ACCOUNT: even the correct password is then
-# rejected for 10 minutes — at hyprlock, TTY logins and sudo alike.
-# 2026-11-02: hit for real.
-#
-# A lockscreen is not a login surface: it guards a running session. The
-# data-at-rest boundary is LUKS; the login path on this machine is the
-# tty1 autologin override (see .root/README.md). Brute-force lockout
-# policy belongs to sudo/su/TTY, which keep their faillock untouched.
-# Tradeoff accepted: the lockscreen itself no longer rate-limits guessing
-# — password strength is that boundary.
-#
-# pam_unix verifies the same local unix password as before. No nullok:
-# an empty password never unlocks.
+# pam_unix only: the stock "auth include login" pulls in pam_faillock, and 3 fumbled
+# unlocks locked the whole account for 10 min (2026-11-02). sudo/TTY keep faillock.
+# No nullok: an empty password never unlocks.
 
 auth            required        pam_unix.so

@@ -1,7 +1,5 @@
 [Unit]
-# OnFailure partner of clamav-scan.service: a failed weekly scan (exit 1
-# = detections, exit 2 = error) becomes a desktop toast via the notifier
-# script. Not enabled — only ever triggered by the scan unit failing.
+# OnFailure target of clamav-scan.service; never enabled
 Description=clamav scan failure - desktop notification
 
 [Service]

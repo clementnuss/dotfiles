@@ -1,5 +1,5 @@
 [Unit]
-# Fires the weekly AV scan — see clamav-scan.service (AC-only).
+Description=weekly clamav scan
 
 [Timer]
 OnCalendar=Sun 20:00

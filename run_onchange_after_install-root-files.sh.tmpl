@@ -1,0 +1,74 @@
+#!/bin/bash
+# Installs the low-risk part of .root/ (see .root/README.md); reruns when any of them changes.
+# Manual on purpose: pam.d/hyprlock, the getty override, clamd.conf, snapper/configs/root,
+# airscan.conf (archived, installed only if WSD discovery flakes).
+{{- $files := list
+  "etc/modules-load.d/i2c-dev.conf"
+  "etc/modules-load.d/tun.conf"
+  "etc/modules-load.d/uinput.conf"
+  "etc/udev/rules.d/99-input.rules"
+  "etc/snap-pac.ini"
+  "etc/nftables.conf"
+  "etc/systemd/system/clamav-notify.service"
+  "etc/systemd/system/clamav-scan.service"
+  "etc/systemd/system/clamav-scan.timer"
+  "etc/systemd/system/unattended-update.service"
+  "etc/systemd/system/unattended-update.timer"
+  "usr/local/sbin/clamav-notify"
+  "usr/local/sbin/localsend-mode"
+  "usr/local/sbin/unattended-update" }}
+{{- range $files }}
+# {{ . }} {{ include (printf ".root/%s" .) | sha256sum }}
+{{- end }}
+set -euo pipefail
+
+src={{ .chezmoi.sourceDir }}/.root
+files=(
+{{- range $files }}
+    {{ . }}
+{{- end }}
+)
+
+changed=()
+new=()
+for f in "${files[@]}"; do
+    cmp -s "$src/$f" "/$f" && continue
+    [ -e "/$f" ] || new+=("$f")
+    changed+=("$f")
+done
+[ ${#changed[@]} -eq 0 ] && exit 0
+
+echo "root files to install: ${changed[*]}"
+sudo -v
+
+has() { printf '%s\n' "${changed[@]}" | grep -q "$1"; }
+is_new() { printf '%s\n' "${new[@]}" | grep -qx "$1"; }
+
+# a bad ruleset must never reach /etc
+has '^etc/nftables.conf$' && sudo nft -c -f "$src/etc/nftables.conf"
+
+for f in "${changed[@]}"; do
+    case "$f" in
+        usr/local/sbin/*) mode=755 ;;
+        *) mode=644 ;;
+    esac
+    sudo install -D -o root -g root -m "$mode" "$src/$f" "/$f"
+done
+
+if has '^etc/modules-load.d/'; then
+    for f in "${changed[@]}"; do
+        case "$f" in etc/modules-load.d/*) sudo modprobe "$(cat "$src/$f")" ;; esac
+    done
+fi
+has '^etc/udev/rules.d/' && { sudo udevadm control --reload && sudo udevadm trigger; }
+if has '^etc/nftables.conf$'; then
+    sudo nft -f /etc/nftables.conf
+    is_new etc/nftables.conf && sudo systemctl enable nftables
+fi
+if has '^etc/systemd/system/'; then
+    sudo systemctl daemon-reload
+    for t in clamav-scan.timer unattended-update.timer; do
+        is_new "etc/systemd/system/$t" && sudo systemctl enable --now "$t"
+    done
+fi
+echo "root files installed"

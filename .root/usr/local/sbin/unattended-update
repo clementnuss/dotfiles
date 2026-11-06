@@ -1,17 +1,6 @@
 #!/bin/sh
-# Weekly unattended Arch update — the honest implementation of Drata's
-# "auto-update" control. Arch has NO supported unattended-upgrade
-# mechanism (unlike Debian's unattended-upgrades), so this is a guarded
-# approximation: checkupdates-gated, keyring FIRST (classic breakage
-# prevention), then the full upgrade; the journal is the audit evidence
-# and the outcome toasts either way. Deliberately EXCLUDED: AUR/yay
-# builds — unattended PKGBUILD execution is a code-execution risk and
-# AUR packages need human eyes. News-level manual interventions won't
-# be read — a failure toasts and the journal has the transcript.
-# Post-run smoke check: failed units (systemctl --failed) upgrade the
-# success toast to critical, so "applied but broke something live"
-# surfaces within minutes.
-# See .root/README.md ("Weekly system update") and AGENTS.md.
+# weekly guarded pacman -Syu (Drata auto-update): checkupdates-gated, keyring first,
+# no AUR, toasts the outcome; failed units afterwards make the toast critical
 
 [ "$(id -u)" -eq 0 ] || { echo 'must run as root (systemd unit)'; exit 1; }
 

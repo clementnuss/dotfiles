@@ -1,14 +1,5 @@
 [Unit]
-# Weekly on-demand AV scan for Drata evidence — see .root/README.md.
-# AC-only by design (ConditionACPower): compliance without battery cost.
-# clamdscan reuses the resident clamd's loaded signatures (no DB reload
-# per run) and --fdpass lets the root client hand file descriptors to
-# the clamav-user daemon. Traversal excludes (proc/sys/dev/run and the
-# signature dir itself) live in clamd.conf ExcludePath — appended there
-# because clamd has no conf.d includes.
-# OnFailure: a failed scan (exit 1 = detections, exit 2 = error) fires
-# clamav-notify.service → a critical desktop toast. The journal keeps
-# the FOUND lines either way; the toast is the human's heads-up.
+# exit 1 = detections (unit "fails" by design), exit 2 = error; excludes live in clamd.conf
 Description=clamav weekly scan (Drata evidence; AC-only)
 ConditionACPower=true
 OnFailure=clamav-notify.service

@@ -1,9 +1,4 @@
 [Unit]
-# Weekly unattended Arch system update — the honest implementation of
-# Drata's "auto-update" control (Arch has no supported unattended
-# upgrade; the guarded design lives in the script + AGENTS.md). AC-only
-# and after the network; fires Sun 18:00, BEFORE the 20:00 clamav scan,
-# so the freshly updated system is scanned the same evening.
 Description=weekly Arch system update (Drata auto-update evidence)
 Wants=network-online.target
 After=network-online.target

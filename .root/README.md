@@ -1,8 +1,16 @@
 # Root-owned config archive
 
-Chezmoi only manages files under $HOME, so root-owned configs can't be
-deployed by `chezmoi apply`. They live here instead — version-controlled,
-mirroring their real absolute paths — and get installed manually with sudo.
+Chezmoi only manages files under $HOME, so root-owned configs live here
+instead, version-controlled and mirroring their real absolute paths.
+
+`run_onchange_after_install-root-files.sh.tmpl` installs the low-risk ones
+on `chezmoi apply` (sudo prompt; only files that differ; nft -c before any
+ruleset lands; reloads only what changed; first install also enables).
+Still manual, per the sections below, because a mistake there locks you
+out or hides an upstream `.pacnew`: `pam.d/hyprlock`, the getty override,
+`clamav/clamd.conf`, `snapper/configs/root`, plus `sane.d/airscan.conf`
+(archived, not installed). The per-section install commands stay as the
+record of what the script does.
 
 ## getty@tty1 autologin override
 

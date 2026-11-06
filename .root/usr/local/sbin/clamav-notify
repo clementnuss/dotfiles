@@ -1,14 +1,5 @@
 #!/bin/sh
-# clamav-scan.service OnFailure hook: turn a failed weekly AV scan into a
-# desktop toast (omni-shell's notification service). clamdscan exit codes:
-# 0 clean, 1 infected, 2 error — a "failed" unit can mean either, so this
-# classifies by counting FOUND lines in this run's journal window (48h:
-# the weekly cadence means any previous run's lines are >48h old) and
-# says which it was. Delivery: runuser reaches each logged-in user's
-# session bus with no sudoers changes (the Arch wiki's VirusEvent recipe
-# needs a NOPASSWD sudoers entry for the clamav user — deliberately
-# avoided; this path is root-run instead). Nobody logged in = no sockets
-# to deliver to = the journal remains the evidence, silently.
+# clamav-scan OnFailure hook: count FOUND lines (48h window) and toast every session bus via runuser
 
 FOUND=$(journalctl -u clamav-scan.service --since "-48h" --no-pager | grep -c " FOUND")
 
