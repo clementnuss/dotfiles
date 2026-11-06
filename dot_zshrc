@@ -1,0 +1,104 @@
+export EDITOR=nvim
+export GPG_TTY=$TTY
+export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/rbw/ssh-agent-socket"
+export KIND_EXPERIMENTAL_PROVIDER=podman
+export PNPM_HOME="$HOME/.local/share/pnpm"
+
+typeset -U path
+path=("$PNPM_HOME" $path "${GOPATH:-$HOME/go}/bin" "$HOME/.krew/bin" "$HOME/.local/bin")
+
+zstyle ':antidote:bundle' use-friendly-names 'yes'
+zstyle ':zsh-utils:plugins:history' use-xdg-basedirs 'no'
+
+setopt COMPLETE_IN_WORD ALWAYS_TO_END AUTO_MENU AUTO_LIST AUTO_PARAM_SLASH EXTENDED_GLOB
+unsetopt MENU_COMPLETE FLOW_CONTROL
+
+zstyle ':completion:*' list-packed true
+zstyle ':completion:*' list-suffixes true
+zstyle ':completion:*' squeeze-slashes true
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
+zstyle ':completion:*' menu select
+zstyle ':completion:*' special-dirs true
+zstyle ':completion:*' verbose yes
+zstyle ':completion:*' file-sort modification
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+zstyle ':completion::complete:*' use-cache on
+zstyle ':completion::complete:*' cache-path "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/compcache"
+
+ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/oh-my-zsh"
+mkdir -p "$ZSH_CACHE_DIR/completions"
+ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
+
+source ${ZDOTDIR:-~}/.antidote/antidote.zsh
+antidote load
+
+# starship init costs ~20ms; cache it, regenerated when .zshrc changes
+STARSHIP_CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/starship_init.zsh"
+if [[ ! -f "$STARSHIP_CACHE" || "${ZDOTDIR:-$HOME}/.zshrc" -nt "$STARSHIP_CACHE" ]]; then
+  starship init zsh > "$STARSHIP_CACHE"
+fi
+source "$STARSHIP_CACHE"
+
+# native vi mode (zsh-vi-mode is slow), with emacs keys kept in insert mode
+bindkey -v
+bindkey '^A' beginning-of-line
+bindkey '^E' end-of-line
+bindkey '^F' forward-char
+bindkey '^B' backward-char
+bindkey '^P' up-line-or-history
+bindkey '^N' down-line-or-history
+bindkey '^K' kill-line
+bindkey '^U' backward-kill-line
+bindkey '^W' backward-kill-word
+
+vi-yank-clipboard() {
+  zle vi-yank
+  print -rn -- "$CUTBUFFER" | wl-copy
+}
+zle -N vi-yank-clipboard
+bindkey -M vicmd 'y' vi-yank-clipboard
+bindkey -M visual 'y' vi-yank-clipboard
+
+# order matters: atuin loads after fzf so it owns ^R
+zsh-defer eval "$(fzf --zsh)"
+zsh-defer eval "$(atuin init zsh)"
+zsh-defer eval "$(zoxide init zsh)"
+(( $+commands[kubesess] )) && zsh-defer -c 'eval "$(kubesess init zsh)"'
+
+alias task='go-task'
+alias wifitui='wifitui --theme="$HOME/.config/wifitui/theme.toml"'
+
+# creds [filter]: source one dev-docs/credentials/*.env; calling again unloads the previous one
+_CREDS_BASE="$HOME/git/github.com/clementnuss/dev-docs/credentials"
+creds() {
+  if [[ -n "$_CREDS_LOADED" ]]; then
+    echo "unloading: $_CREDS_LOADED"
+    for var in ${(s/:/)_CREDS_VARS}; do
+      unset "$var"
+    done
+    unset _CREDS_LOADED _CREDS_VARS
+  fi
+
+  local file
+  if [[ -n "$1" ]]; then
+    file=$(ls "$_CREDS_BASE"/*.env 2>/dev/null | xargs -n1 basename | grep -i "$1" | head -1)
+    [[ -z "$file" ]] && echo "no match for: $1" && return 1
+  else
+    file=$(ls "$_CREDS_BASE"/*.env 2>/dev/null | xargs -n1 basename | fzf --prompt="credentials> ")
+  fi
+  [[ -z "$file" ]] && echo "no credentials selected" && return 1
+
+  local before after
+  before=$(env | cut -d= -f1 | sort)
+  source "$_CREDS_BASE/$file"
+  after=$(env | cut -d= -f1 | sort)
+
+  export _CREDS_LOADED="$file"
+  export _CREDS_VARS=$(comm -13 <(echo "$before") <(echo "$after") | tr '\n' ':')
+
+  local info=$(grep '^#' "$_CREDS_BASE/$file" | head -1 | sed 's/^# *//')
+  echo "loaded: $file"
+  [[ -n "$info" ]] && echo "  -> $info"
+}
+
+[[ -f ~/.zshrc-local ]] && source ~/.zshrc-local

@@ -1,182 +1,119 @@
-{{- if and (eq .chezmoi.os "linux") (stat "/etc/arch-release") -}}
 #!/bin/bash
-# vim: ft=bash
-# run_onchange_install-packages.sh.tmpl
-# This script installs official and AUR packages
-# It runs whenever the content of this file changes
-
 set -euo pipefail
 
-# Color output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-log_info() {
-    echo -e "${GREEN}[INFO]${NC} $1"
-}
-
-log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
-}
-
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-# Official packages from pacman repositories
 OFFICIAL_PACKAGES=(
+    7zip
     atuin
+    bluez
+    bluez-utils
+    brightnessctl
+    btop
     chezmoi
+    chromium
+    clamav
+    cliphist
+    cups
+    ddcutil
     dog
+    ffmpeg
     fluxcd
+    fuse-overlayfs
+    fuzzel
+    fzf
+    ghostscript
+    ghostty
     ghq
     git-delta
     git-lfs
     go
     go-task
     gpg-tui
-    k9s
-    kubectl
-    nodejs      # Mason npm-based LSPs/formatters: vtsls, yamlls, jsonls, prettier
-    nftables    # firewall ruleset (.root/etc/nftables.conf)
-    npm
-    podman              # rootless containers; no docker daemon ever (see AGENTS.md)
-    podman-docker       # docker CLI shim for scripts
-    fuse-overlayfs      # rootless layer store: kernel overlay can't sit on btrfs (all-btrfs machine)
-    rbw
-    rclone
-    sops
-    talosctl
-    tmux
-    wireguard-tools
-    zsh
-    # --- Hyprland desktop (fw13): compositor + shell + audio + input ---
-    7zip        # yazi archive preview/extraction (archive.lua wants 7zz)
-    bluez
-    bluez-utils
-    brightnessctl
-    btop
-    clamav      # AV for Drata compliance: freshclam + clamd + weekly AC-only scan (.root/README.md)
-    cups        # print server; socket-activated (print.md)
-    ddcutil
-    ffmpeg      # yazi video thumbnails + metadata (video.lua calls ffmpeg/ffprobe)
-    fuzzel
-    ghostscript # print: gstoraster needs it — optdep of cups-filters, easy to miss
-    ghostty
-    gsfonts     # print: ghostscript fonts
     gpu-screen-recorder
     grim
+    gsfonts
     hypridle
-    hyprlock
     hyprland
+    hyprlock
+    hyprpolkitagent
+    jq
+    k9s
+    kubectl
+    lazygit
+    neovim
     networkmanager
+    nftables
+    nodejs
     noto-fonts-emoji
-    pacman-contrib  # checkupdates: gates + evidences unattended-update (Drata auto-update)
+    npm
+    pacman-contrib
     pipewire
     pipewire-alsa
     pipewire-audio
     pipewire-pulse
+    pnpm
+    podman
+    podman-docker
     power-profiles-daemon
     pulsemixer
     python-gobject
+    rbw
+    rclone
     rofimoji
-    sane-airscan # scan: driverless eSCL/WSD backend (print.md)
+    sane-airscan
     satty
-    simple-scan  # scan: GTK frontend
+    simple-scan
     slurp
-    snap-pac  # pacman pre/post snapshot hooks (snapper config root; .root/README.md)
-    snapper   # count cleanup + rollback; timeline off by design (pacman = change vector)
+    snap-pac
+    snapper
     sof-firmware
+    sops
+    starship
     swaybg
+    talosctl
+    tmux
     ttf-jetbrains-mono-nerd
-    udiskie     # removable-media automount client (udisks2): mounts to /run/media/<user>/<label>
-    udisks2     # storage daemon; mounts with the requesting user's uid (vfat uid=1000)
-    wl-clipboard
+    udiskie
+    udisks2
+    uwsm
+    wireguard-tools
     wireplumber
+    wl-clipboard
     wtype
+    xdg-terminal-exec
     yazi
+    zoxide
+    zsh
 )
 
-# AUR packages (requires yay or paru)
 AUR_PACKAGES=(
     caligula-bin
-    # gonzo
+    ddcutil-service
+{{- if eq .profile "work" }}
+    drata-agent
+{{- end }}
+    hyprmoncfg
     kanata-bin
     kind
     kopia-bin
-    localsend  # LAN AirDrop alternative; firewall carve-out in .root/etc/nftables.conf
-    vial-appimage
-    # --- Hyprland desktop (fw13): shell suite + monitor/wifi tooling ---
-    ddcutil-service
-    drata-agent  # compliance reporter (Drata); autostart = systemd user unit drata-agent.service (AGENTS.md)
-    hyprmoncfg
+    localsend
     omni-launcher
     omni-shell
+    vial-appimage
     wifitui
 )
 
-# Detect AUR helper
-AUR_HELPER=""
-if command -v yay &> /dev/null; then
-    AUR_HELPER="yay"
-elif command -v paru &> /dev/null; then
-    AUR_HELPER="paru"
+sudo pacman -S --needed --noconfirm "${OFFICIAL_PACKAGES[@]}"
+
+if command -v yay >/dev/null; then
+    yay -S --needed --noconfirm "${AUR_PACKAGES[@]}"
 else
-    log_warn "No AUR helper (yay or paru) found. AUR packages will be skipped."
+    echo "yay not found: skipping AUR packages" >&2
 fi
 
-# Function to check if package is installed
-is_installed() {
-    pacman -Qi "$1" &> /dev/null
-}
-
-# Install official packages
-log_info "Checking official packages..."
-OFFICIAL_TO_INSTALL=()
-for pkg in "${OFFICIAL_PACKAGES[@]}"; do
-    if ! is_installed "$pkg"; then
-        OFFICIAL_TO_INSTALL+=("$pkg")
-    fi
-done
-
-if [[ ${#OFFICIAL_TO_INSTALL[@]} -gt 0 ]]; then
-    log_info "Installing ${#OFFICIAL_TO_INSTALL[@]} official packages..."
-    sudo pacman -S --needed --noconfirm "${OFFICIAL_TO_INSTALL[@]}"
-else
-    log_info "All official packages are already installed"
-fi
-
-# Install AUR packages
-if [[ -n "$AUR_HELPER" ]]; then
-    log_info "Checking AUR packages..."
-    AUR_TO_INSTALL=()
-    for pkg in "${AUR_PACKAGES[@]}"; do
-        if ! is_installed "$pkg"; then
-            AUR_TO_INSTALL+=("$pkg")
-        fi
-    done
-
-    if [[ ${#AUR_TO_INSTALL[@]} -gt 0 ]]; then
-        log_info "Installing ${#AUR_TO_INSTALL[@]} AUR packages with $AUR_HELPER..."
-        $AUR_HELPER -S --needed --noconfirm "${AUR_TO_INSTALL[@]}"
-    else
-        log_info "All AUR packages are already installed"
-    fi
-fi
-
-# --- cliphist-next: upstream master build (unreleased as of v0.7.0) ---
-# The entry-metadata work (list -fields id,timestamp) is merged upstream but
-# not released; cliphist-redact --min-age needs it. Delete this block AND
-# ~/.local/bin/cliphist-next once the distro cliphist has -fields, then
-# cliphist-redact falls back to `cliphist` seamlessly.
-if command -v go &> /dev/null && [ ! -x "$HOME/.local/bin/cliphist-next" ]; then
-    log_info "Building cliphist-next from upstream master (pinned sha)..."
+# cliphist master build for `list -fields` (cliphist-redact --min-age);
+# drop this and ~/.local/bin/cliphist-next once the distro cliphist has it
+if command -v go >/dev/null && [ ! -x "$HOME/.local/bin/cliphist-next" ]; then
     GOBIN="$HOME/.local/bin" go install go.senan.xyz/cliphist@f968c4f01395860e8c989c550c1621124927890f \
         && mv "$HOME/.local/bin/cliphist" "$HOME/.local/bin/cliphist-next" \
-        || log_warn "cliphist-next build failed; cliphist-redact --min-age will warn and degrade"
+        || echo "cliphist-next build failed" >&2
 fi
-
-log_info "Package installation complete!"
-{{- end -}}

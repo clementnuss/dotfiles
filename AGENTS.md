@@ -8,6 +8,11 @@ Multi-machine chezmoi repo. This README stays in the source only
 - **fw13-cjmnuss** — Framework 13 (AMD Ryzen AI 300), Arch Linux, Hyprland.
   Minimal, explainable, Catppuccin **Latte** (light). This section documents it.
 
+`profile` (chezmoi data, prompted once: `work`/`personal`) is the only
+machine switch. fw13 is `work`; `personal` drops the drata-agent package and
+unit (`.chezmoiignore`), everything else is shared. Change it with
+`chezmoi init --promptChoice Profile=<work|personal>`.
+
 ## Boot chain (fw13)
 
 LUKS → getty@tty1 **autologin** (root override, see `.root/README.md`) →

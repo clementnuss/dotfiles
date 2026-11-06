@@ -8,50 +8,37 @@
 	rebase = false
 [init]
 	defaultBranch = main
-[ghq]
-  root = ~/git
-
-[core]
-    pager = delta
-[interactive]
-    diffFilter = delta --color-only --features=interactive
-[diff]
-    colorMoved = default
-
-[delta]
-    features = decorations
-    light = true
-
-[delta "interactive"]
-    keep-plus-minus-markers = false
-
-[delta "decorations"]
-    commit-decoration-style = blue ol
-    commit-style = raw
-    file-style = omit
-    hunk-header-decoration-style = blue box
-    hunk-header-file-style = red
-    hunk-header-line-number-style = "#067a00"
-    hunk-header-style = file line-number syntax
-
 [push]
 	autoSetupRemote = true
+[ghq]
+	root = ~/git
+[core]
+	pager = delta
+[interactive]
+	diffFilter = delta --color-only --features=interactive
+[diff]
+	colorMoved = default
+[delta]
+	features = decorations
+	light = true
+[delta "interactive"]
+	keep-plus-minus-markers = false
+[delta "decorations"]
+	commit-decoration-style = blue ol
+	commit-style = raw
+	file-style = omit
+	hunk-header-decoration-style = blue box
+	hunk-header-file-style = red
+	hunk-header-line-number-style = "#067a00"
+	hunk-header-style = file line-number syntax
 [credential]
 	helper = cache --timeout=86400
 [filter "lfs"]
-    clean = git-lfs clean -- %f
-    smudge = git-lfs smudge -- %f
-    process = git-lfs filter-process
-    required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
 
-{{- if eq .profile "work" }}
-## work environment
-[url "https://github.com/"]
-        insteadOf = git@github.com:
-[credential "https://github.com"]
-	username = clementnuss
-{{- end }}
-
-# VictoriaMetrics repos commit with the work identity (kept last so it wins)
+# keep last so the work identity wins
 [includeIf "gitdir:~/git/github.com/VictoriaMetrics/"]
 	path = ~/.config/git/victoriametrics
