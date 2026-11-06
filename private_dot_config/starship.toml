@@ -3,6 +3,10 @@ palette = "catppuccin_latte"
 [nodejs]
 disabled = true
 
+# project only, never the account; hidden when no project is set
+[gcloud]
+format = '([☁️  $project(\($region\))]($style) )'
+
 [time]
 disabled = false
 format = '🕙[ $time ](text) '
