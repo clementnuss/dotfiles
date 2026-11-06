@@ -21,8 +21,5 @@ gui:
       - '#df8e1d'
 git:
   overrideGpg: true
-  # diffRenderers:
-  #   - colorArg: always
-  #     command: delta --light --paging=never --line-numbers
 os:
   editPreset: nvim

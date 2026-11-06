@@ -1,6 +1,5 @@
 plugins:
-  #--- Create debug container for selected pod in current namespace
-  # See https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/#ephemeral-container
+  # https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/#ephemeral-container
   debug:
     shortCut: Shift-D
     description: Add debug container
@@ -14,13 +13,3 @@ plugins:
       - -c
       - "kubectl debug -it --context $CONTEXT -n=$NAMESPACE $POD --target=$NAME --image=nicolaka/netshoot:latest --share-processes -- bash"
 
-  gonzo:
-    shortCut: Ctrl-L
-    description: "Gonzo log analysis"
-    scopes:
-      - po
-    command: sh
-    background: false
-    args:
-      - -c
-      - "kubectl logs -f $NAME -n $NAMESPACE --context $CONTEXT | gonzo"

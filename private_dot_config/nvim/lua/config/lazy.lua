@@ -21,20 +21,13 @@ require("lazy").setup({
   },
   defaults = {
     lazy = false,
-    version = false, -- always use the latest git commit
+    version = false,
   },
-  checker = {
-    enabled = true, -- check for plugin updates periodically
-    notify = true, -- notify on update
-  }, -- automatically check for plugin updates
+  checker = { enabled = true, notify = true },
   performance = {
     rtp = {
-      -- disable some rtp plugins
       disabled_plugins = {
         "gzip",
-        -- "matchit",
-        -- "matchparen",
-        -- "netrwPlugin",
         "tarPlugin",
         "tohtml",
         "tutor",

@@ -5,7 +5,6 @@ local direction_keys = {
   l = 'right',
 }
 
--- Terminal Mappings
 local function term_nav(dir)
   ---@param self snacks.terminal
   return function(self)
@@ -16,8 +15,6 @@ local function term_nav(dir)
 end
 
 return {
-
-  -- Snacks utils
   {
     "snacks.nvim",
     opts = {
@@ -31,12 +28,8 @@ return {
           },
         },
       },
-      zen = {
-        win = {
-          width = 0.65,
-          -- height = 0.85,
-        },
-      },
+      scroll = { enabled = false },
+      zen = { win = { width = 0.65 } },
     },
   },
 }

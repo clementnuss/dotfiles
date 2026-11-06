@@ -1,11 +1,7 @@
-
 palette = "catppuccin_latte"
 
 [nodejs]
 disabled = true
-
-# [golang]
-# disabled = true
 
 [time]
 disabled = false

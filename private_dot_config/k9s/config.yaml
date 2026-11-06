@@ -21,16 +21,6 @@ k9s:
       memory: 100Mi
   imageScans:
     enable: false
-    exclusions:
-      namespaces:
-      - kube-system
-      - fred
-      labels:
-        env:
-        - dev
-        k8s-app:
-        - kindnet
-        - bozo
   logger:
     tail: 100
     buffer: 5000

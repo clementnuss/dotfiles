@@ -1,7 +1,7 @@
 return {
   "MeanderingProgrammer/render-markdown.nvim",
   opts = {
-   html = {
+    html = {
       comment = {
         conceal = false,
       },
