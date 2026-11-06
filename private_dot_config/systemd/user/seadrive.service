@@ -1,0 +1,15 @@
+[Unit]
+Description=SeaDrive client (FUSE mount at ~/SeaDrive)
+PartOf=graphical-session.target
+After=graphical-session.target network-online.target
+
+[Service]
+ExecStart=/usr/bin/seadrive-gui
+# a crash leaves a dead FUSE mount ("transport endpoint is not connected") that blocks the restart
+ExecStopPost=-/usr/bin/fusermount3 -uz %h/SeaDrive
+# on-failure, not always: quitting from the tray stays quit
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

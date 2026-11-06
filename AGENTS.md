@@ -58,6 +58,7 @@ qemu + OVMF, same ISO version the USB carries).
 | printing | CUPS queue `MFC-L8690CDW` + `cups.socket` | driverless IPP Everywhere to the Brother MFC-L8690CDW (`ipp://Brother-L8690CDW-ClemJul/ipp/print`); system default via /etc/cups/lpoptions; web UI :631 auth = PAM/wheel (no cupsd accounts, no edits made). **ghostscript is load-bearing** (optdep of cups-filters). Full setup + recovery: `print.md` |
 | scanning | scan-to-FTP from the printer (primary); sane-airscan + simple-scan (optional pull-scan) | **Primary: scan-to-FTP** — printer-initiated, configured on the MFC's console, nothing on this machine. PC pull-scan works **zero-config** (airscan built-in WS-Discovery, no avahi, proven by a live test scan); the deterministic WSD/IPv4 entry is archived in `.root/` but NOT installed — add it only if discovery ever flakes. airscan ignores `~/.config/sane.d/`; the /etc file is package-owned and upgrade-clobbered. Verify: `scanimage -L` |
 | removable media | udisks2 + udiskie (`systemd/user/udiskie.service`) | automounts USB/SD to `/run/media/cjmnuss/<label>` **as the user's uid** (vfat uid=1000 — files owned by you, no root-owned card); internal disks excluded by udiskie's built-in `!is_external` rule (nvme/ESP never automount); devices already present at startup get mounted too; explicit `--automount --notify` (mount toasts via omni-shell). Runs as a supervised systemd user service, hypridle-style — a manually-started udiskie died silently with a broken env once. No config file; flags + defaults suffice. FAT labels matter: no label ⇒ UUID mountpoint (fix: `fatlabel`) |
+| SeaDrive | `~/.config/systemd/user/seadrive.service` | `seadrive-gui` (spawns the FUSE daemon, mounts `~/SeaDrive`) as a supervised unit `WantedBy=graphical-session.target`; `Restart=on-failure` so quitting from the tray stays quit; `ExecStopPost` lazy-unmounts a crashed mount so the restart can remount |
 | system updates | `unattended-update.timer` (`.root/`) + `proof-updates` | **Drata "auto-update"**: weekly Sun 18:00, AC-only, guarded — checkupdates-gated, **keyring first**, full `pacman -Syu`, journal = audit evidence, outcome toast always (with `.pacnew` count + post-run failed-units smoke check), fires **before** the 20:00 AV scan so the fresh system is scanned same evening. AUR/yay deliberately excluded (unattended PKGBUILD = code-exec risk). Arch has no supported unattended mechanism — this is the honest guarded approximation (gotcha below) |
 | snapshots | snapper + snap-pac (`.root/etc/snapper/configs/root`, `.root/etc/snap-pac.ini`) | pre/post pair around EVERY pacman transaction (snap-pac 3 hooks, config "root"; pre hook AbortOnFail = uninsurable transactions abort); hourly count cleanup (`snapper-cleanup.timer`, 20 regular / 10 important); kernel pairs tagged important; timeline + boot snapshots + qgroups deliberately OFF (pacman = the change vector); **rollback = `sudo snapper rollback <n>` + reboot**; @home = kopia's domain. Scoping gotcha below; install/verify/undo + rollback test: `.root/README.md` |
 | drata agent | AUR `drata-agent` + `drata-agent.service` (systemd user) | compliance reporter (Electron tray app + bundled osqueryi) — package ships NO Linux autostart (menu entry only), and this session has no XDG-autostart processor anyway (gotcha below). Autostart = supervised unit `WantedBy=graphical-session.target`, `Restart=always` — a crash self-heals in 3s, deliberate for a compliance agent (ghostty ships the same architecture vendor-side). The agent's in-app login toggle is broken on Arch (Electron `setLoginItemSettings` → junk `electron.desktop`, Exec = bare system electron — deleted; leave the toggle off, it would rewrite the junk). Cost: `PartOf=graphical-session` — no agent in pure-tty sessions |
@@ -146,7 +147,7 @@ qemu + OVMF, same ISO version the USB carries).
   `systemd-xdg-autostart-generator` (a Debian patch, not upstream) and
   uwsm implements none: `~/.config/autostart/*.desktop` entries NEVER
   launch. Session autostart = systemd user units
-  `WantedBy=graphical-session.target` (hypridle, udiskie, drata-agent;
+  `WantedBy=graphical-session.target` (hypridle, udiskie, drata-agent, seadrive;
   ghostty ships a vendor unit on the same route). Electron "launch at
   login" toggles also misfire on Arch: `setLoginItemSettings` writes
   `Exec=process.execPath` = the SYSTEM electron binary, app argument
@@ -306,7 +307,7 @@ including the Hyprland desktop stack. Editing the list changes the script's
 hash, so the next `chezmoi apply` re-runs it — everything is installed with
 `--needed`, so it is idempotent.
 
-## Uncommitted work
+## Commits
 
-This repo accumulates work; commit often:
-`git -C ~/.local/share/chezmoi add -A && git -C ~/.local/share/chezmoi commit`
+The owner commits — agents never do. No `git commit`, no push, no PRs,
+no comments: leave changes staged or unstaged and summarize what's pending.
