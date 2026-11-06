@@ -1,11 +1,5 @@
 #!/bin/sh
-# Drata evidence: the "auto-update" control proof block, transcript-
-# style (same shape as proof-antivirus / proof-encryption). Shows the
-# update timer enabled + next fire, the last run's journal (pending
-# count + applied upgrade = the audit evidence), and the pending count
-# right now (patch currency). Run once after unattended-update has run
-# (the journal lines need a first run).
-# Usage: proof-updates
+# Drata evidence: unattended-update, transcript-style.
 
 printf '========== Arch update / Drata evidence — %s ==========\n' "$(hostname)"
 

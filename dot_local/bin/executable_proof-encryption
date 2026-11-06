@@ -1,14 +1,5 @@
 #!/bin/sh
-# Drata evidence: full-disk-encryption proof, transcript-style (same shape
-# as proof-antivirus — each command echoed before its output, so one
-# screenshot shows what was run and what it returned). The LUKS partition
-# and its active mapping are auto-detected, so this works on any machine
-# the dotfiles deploy to; a machine with no LUKS says so loudly instead of
-# screenshotting something misleading. luksDump/status need sudo (header
-# and mapper state are root-readable only) — run interactively.
-# No set -e: evidence must show reality, including absences.
-#
-# Usage: proof-encryption
+# Drata evidence: LUKS, transcript-style. No set -e: show failures too.
 
 printf '========== LUKS / Drata evidence — %s ==========\n' "$(hostname)"
 

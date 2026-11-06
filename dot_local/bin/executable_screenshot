@@ -1,16 +1,10 @@
 #!/bin/bash
-# screenshot [region|window|all]
-# Capture with grim, save to ~/Pictures/Screenshots, copy to the clipboard,
-# and send a notification with a thumbnail. omni-shell's notification service
-# maps category-"screenshot" toasts to satty: click the toast to annotate
-# (edited copies land in ~/Pictures — see the ~/pictures symlink gotcha in the
-# chezmoi README). Pressing the bind again cancels a pending selection.
+# screenshot [region|window|all]: file + clipboard + toast (click = satty). Re-press cancels.
 
 set -u
 DIR="$HOME/Pictures/Screenshots"
 mkdir -p "$DIR"
 
-# Second press while a selection is pending: cancel it and exit.
 pkill -x slurp && exit 0
 
 mode="${1:-region}"

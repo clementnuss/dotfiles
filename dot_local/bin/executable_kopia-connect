@@ -1,8 +1,5 @@
 #!/bin/sh
-# kopia-connect: connect kopia to the Synology WebDAV backup repository.
-# All secrets come from rbw (Bitwarden) — nothing sensitive lives in git.
-# Repo path convention: <webdav-url>/backup/kopia-<hostname>/ per machine.
-# Idempotent: exits 0 with repository status when already connected.
+# connect kopia to the Synology WebDAV repo at <url>/backup/kopia-<hostname>/; secrets from rbw
 set -eu
 
 command -v kopia >/dev/null 2>&1 || { echo "kopia-connect: kopia missing — chezmoi apply + yay first"; exit 1; }
@@ -17,8 +14,6 @@ base=$(rbw get syno-nuss-roy -f webdav-url) || { echo "kopia-connect: rbw locked
 url="${base%/}/backup/kopia-$(hostname)/"
 user=$(rbw get syno-nuss-roy -f username)
 pass=$(rbw get syno-nuss-roy -f password)
-
-echo $url 
 
 KOPIA_PASSWORD="$(rbw get kopia-password)" \
     kopia repository connect webdav \

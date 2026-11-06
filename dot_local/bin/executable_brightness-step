@@ -1,10 +1,5 @@
 #!/bin/sh
-# Unified brightness for the laptop Fn keys:
-#   - internal panel via brightnessctl (no-op when its output is off)
-#   - external ASUS PA27JCV via ddcutil-service (D-Bus, display 1, VCP 0x10)
-# ddcutil-service caches values, so read+write stays fast; NO_VERIFY (4)
-# skips the verify/retry round-trip for fire-and-forget writes.
-# Note: VCP writes cost monitor NVRAM cycles - keep presses human-paced.
+# brightness-step up|down: internal panel (floored at 10%) + DDC monitor via ddcutil-service
 
 SVC='com.ddcutil.DdcutilService'
 OBJ='/com/ddcutil/DdcutilObject'
@@ -16,9 +11,6 @@ case "$1" in
   *) echo "usage: brightness-step up|down" >&2; exit 1 ;;
 esac
 
-# Internal panel (if present): step by 5% of max, floored at 10% so an
-# undock-and-open-lid never meets a black screen. Absolute write keeps
-# the floor deterministic (brightnessctl handles device permissions).
 cur=$(cat /sys/class/backlight/*/brightness 2>/dev/null | head -1)
 max=$(cat /sys/class/backlight/*/max_brightness 2>/dev/null | head -1)
 if [ -n "$cur" ] && [ -n "$max" ] && [ "$max" -gt 0 ] 2>/dev/null; then
@@ -30,15 +22,8 @@ if [ -n "$cur" ] && [ -n "$max" ] && [ "$max" -gt 0 ] 2>/dev/null; then
     brightnessctl -q -c backlight set "$new"
 fi
 
-# External monitor (DDC display 1): cached GetVcp -> step -> SetVcp.
-# Two ddcutil-service traps handled here:
-#  - busctl exits 0 even when the daemon reports an error: the reply's
-#    status field (2nd-to-last word, 0 = OK) is the real success check,
-#    never the exit code.
-#  - the daemon caches its display map from first detection; after an
-#    i2c re-enumeration (suspend/resume, replug, dock) the map goes stale
-#    and every call returns INVALID_DISPLAY. Self-heal: force a Detect,
-#    retry once, then give up quietly.
+# busctl exits 0 on daemon errors: check the reply status (2nd-to-last field).
+# A stale display map (resume, replug) fails every call: Detect once and retry.
 getvcp() {
     out=$(busctl --user call "$SVC" "$OBJ" "$IFACE" GetVcp isyu 1 "" 0x10 0 2>/dev/null) || return 1
     cur=$(printf '%s\n' "$out" | awk '{print $2}')

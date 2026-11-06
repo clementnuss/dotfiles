@@ -15,14 +15,8 @@ A history entry is deleted when its content matches ANY of:
 Everything else is kept: prose has spaces, URLs have :// and word runs,
 short strings are too risky to judge.
 
---min-age SECONDS keeps a grace window: secret-looking entries younger than
-SECONDS survive. Needs cliphist with entry metadata (`list -fields
-id,timestamp`; merged upstream Sep 2026, unreleased as of v0.7.0). When the
-installed cliphist lacks it, --min-age is ignored with a warning and the run
-deletes unconditionally. Entries with unknown age (stored before metadata
-existed) count as old. The support probe runs against a scratch DB, never
-the real one - v0.7.0 ignores unknown flags (a bare `cliphist wipe -h` wipes
-everything), so live-DB probing is off-limits.
+--min-age SECONDS spares entries younger than SECONDS (needs cliphist with
+`list -fields`; otherwise ignored with a warning).
 
 Known limits (accepted): passwords made of readable words survive R5
 (the word-run guard protects prose from them), and copied 40-char git
@@ -38,10 +32,7 @@ import sys
 import tempfile
 import time
 
-# cliphist-next is built from upstream master (unreleased entry-metadata work:
-# `list -fields id,timestamp`, required by --min-age). Delete the file once the
-# distro cliphist ships >= v0.8 and the fallback takes over seamlessly.
-CLIPHIST_NEXT = "/home/cjmnuss/.local/bin/cliphist-next"
+CLIPHIST_NEXT = os.path.expanduser("~/.local/bin/cliphist-next")
 CLIPHIST = CLIPHIST_NEXT if os.path.exists(CLIPHIST_NEXT) else "cliphist"
 
 TOKEN = re.compile(

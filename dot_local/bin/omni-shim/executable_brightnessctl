@@ -1,28 +1,6 @@
 #!/bin/sh
-# brightnessctl shim for omni-shell only. Hyprland's autostart launches
-# omni-shell with this directory prepended to PATH, so the Control Center
-# brightness slider reports and drives the ASUS PA27JCV over DDC/CI
-# (ddcutil-service on the session bus) instead of the internal panel.
-#
-# Recognizes exactly the two invocations omni-shell's BacklightService
-# makes; anything else — and any DDC failure — falls through to the real
-# brightnessctl. Standalone laptop (no DDC display) therefore reverts to
-# the internal panel automatically.
-#
-#   brightnessctl -m         -> "name,backlight,current,pct%,max"   (2s poll)
-#   brightnessctl -q set N%  -> set VCP 0x10 to N%                 (slider)
-#
-# ddcutil-service traps: busctl exits 0 even on daemon errors — validate
-# the reply's status field (2nd-to-last word, 0 = OK), not the exit code.
-# The daemon's display map goes stale after i2c re-enumeration
-# (suspend/resume, replug, dock): the slider SET path forces a Detect and
-# retries once; the 2s -m poll deliberately NEVER Detects (a probe loop on
-# an undocked laptop would spin forever) — it falls back to the internal
-# panel, and any Fn-key press re-detects for it.
-#
-# Caution (ddcutil-service docs): VCP writes cost monitor NVRAM cycles.
-# Slider drags commit continuously; keep them human-paced and prefer the
-# Fn keys for big changes.
+# brightnessctl shim for omni-shell's slider: drives the DDC monitor, falls back to the real binary.
+# Handles only `-m` (2s poll, never Detects) and `-q set N%` (Detects + retries once).
 
 REAL=/usr/bin/brightnessctl
 SVC='com.ddcutil.DdcutilService'
@@ -47,7 +25,6 @@ if [ "$1" = "-q" ] && [ "$2" = "set" ] && [ $# -eq 3 ]; then
     pct=$(printf '%s' "$3" | tr -dc '0-9')
     [ -n "$pct" ] || exec "$REAL" "$@"
     getvcp || {
-        # stale display map (suspend/resume, replug): re-detect, retry once
         busctl --user call "$SVC" "$OBJ" "$IFACE" Detect u 0 >/dev/null 2>&1
         getvcp || exec "$REAL" "$@"
     }

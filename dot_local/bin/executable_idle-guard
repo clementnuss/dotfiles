@@ -1,9 +1,5 @@
 #!/bin/sh
-# hypridle's 5-minute branch, decided at fire time — hypridle has no
-# conditional config. Docked (external DP/HDMI screen connected):
-# dpms off, stay unlocked (coffee-proof; the 20min listener locks).
-# Portable (internal panel only): lock immediately, as before.
-# Invariant: this dpms-off runs UNLOCKED only — see hypridle.conf.
+# hypridle 5min: docked -> screen off unlocked, portable -> lock
 if hyprctl monitors | grep -qE '^Monitor (DP|HDMI)-'; then
     hyprctl dispatch 'hl.dsp.dpms({action = "off"})'
 else
