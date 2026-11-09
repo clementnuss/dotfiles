@@ -106,6 +106,14 @@ Verify: `ls -l /dev/uinput` shows `root:uinput` with mode `0660`, and
 Undo: remove both files, drop the udev rule, `sudo gpasswd -d cjmnuss uinput`
 (and optionally `sudo groupdel uinput`).
 
+## Razer Kiyo fixed focus
+
+`etc/udev/rules.d/99-razer-kiyo.rules`: its autofocus keeps hunting, so on
+every plug-in the rule turns it off and pins `focus_absolute=80` (sharp at
+desk distance; 255 is fully blurred). Installed by the root-files script.
+Retune live with `v4l2-ctl -d /dev/v4l/by-id/usb-Alpha_Imaging_Tech._Corp._Razer_Kiyo-video-index0 -c focus_absolute=<n>`,
+then update the rule. A web app can re-enable autofocus; a replug resets it.
+
 ## SANE airscan scanner entry (Brother MFC-L8690CDW) — NOT installed (optional)
 
 **Deliberately not installed**: scan-to-FTP from the printer is the primary

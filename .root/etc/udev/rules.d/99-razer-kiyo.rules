@@ -1,0 +1,2 @@
+# Razer Kiyo: autofocus hunts; pin a fixed focus (80 = sharp at desk distance)
+ACTION=="add", SUBSYSTEM=="video4linux", ATTRS{idVendor}=="1532", ATTRS{idProduct}=="0e03", ATTR{index}=="0", RUN+="/usr/bin/v4l2-ctl -d $devnode -c focus_automatic_continuous=0 -c focus_absolute=80"
