@@ -1,12 +1,5 @@
 -- center mode: empty side windows keep the text in the middle of a wide screen
-local function centered()
-  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
-    if vim.bo[vim.api.nvim_win_get_buf(win)].filetype == "no-neck-pain" then
-      return true
-    end
-  end
-  return false
-end
+local centered = require("config.util").centered
 
 -- in center mode the docked tree would sit at the far-left edge; float it instead
 local function explorer(dir)
