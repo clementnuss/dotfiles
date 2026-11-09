@@ -167,11 +167,19 @@ conditional HTTP GET every 2h — no measurable battery cost),
 `clamav-daemon.service` (resident clamd; idle CPU ≈ 0, costs RAM for the
 signature set), and a **weekly scan that only runs on AC**
 (`ConditionACPower=true` — compliance without battery drain).
-`clamav-clamonacc` (on-access scanning) is deliberately NOT enabled: it
-is the actual battery drainer (scans every file open/write) and the
-control doesn't need it. Drata's device page is the ground truth —
-check what the agent reports; if a stricter reading ever demands
-on-access, revisit with eyes open.
+`clamav-clamonacc` (on-access) watches **`~/Downloads` and SeaDrive's local cache only**
+(`~/.seadrive/data/file-cache`, where fetched cloud files land)
+(`OnAccessIncludePath` in clamd.conf; whole-home on-access is the battery
+drainer we avoid). Detection-only via a drop-in (the package default
+quarantines to /root/quarantine), `--fdpass` because Downloads is 0700;
+`clamonacc-notify.service` follows its journal and toasts FOUND lines.
+Units and script install with the root-files script; enabling is one-time,
+after the clamd.conf with the OnAccess lines is in place:
+
+    sudo systemctl enable --now clamav-clamonacc.service clamonacc-notify.service
+
+Verify: `curl -s https://secure.eicar.org/eicar.com -o ~/Downloads/eicar.com`
+→ toast + `journalctl -u clamav-clamonacc` shows FOUND; then delete it.
 
 Install, in order (clamd.conf is repo-managed as a FULL file — clamd has
 no conf.d/include mechanism, so `.root/etc/clamav/clamd.conf` is the

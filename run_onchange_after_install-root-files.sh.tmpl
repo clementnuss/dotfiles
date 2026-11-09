@@ -9,12 +9,15 @@
   "etc/udev/rules.d/99-input.rules"
   "etc/snap-pac.ini"
   "etc/nftables.conf"
+  "etc/systemd/system/clamav-clamonacc.service.d/override.conf"
   "etc/systemd/system/clamav-notify.service"
   "etc/systemd/system/clamav-scan.service"
   "etc/systemd/system/clamav-scan.timer"
+  "etc/systemd/system/clamonacc-notify.service"
   "etc/systemd/system/unattended-update.service"
   "etc/systemd/system/unattended-update.timer"
   "usr/local/sbin/clamav-notify"
+  "usr/local/sbin/clamonacc-notify"
   "usr/local/sbin/localsend-mode"
   "usr/local/sbin/unattended-update" }}
 {{- range $files }}

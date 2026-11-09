@@ -1,0 +1,11 @@
+[Unit]
+Description=toast clamonacc detections
+BindsTo=clamav-clamonacc.service
+After=clamav-clamonacc.service
+
+[Service]
+ExecStart=/usr/local/sbin/clamonacc-notify
+Restart=on-failure
+
+[Install]
+WantedBy=clamav-clamonacc.service
