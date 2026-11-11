@@ -1,15 +1,11 @@
+-- opts, not config: merges with LazyVim's lint setup (events, extras' linters)
 return {
   "mfussenegger/nvim-lint",
-  config = function()
-    require("lint").linters_by_ft = {
+  opts = {
+    linters_by_ft = {
       go = { "golangcilint" },
       yaml = { "yamllint" },
-      markdown = { "markdownlint" },
-    }
-    vim.api.nvim_create_autocmd({ "BufWritePost" }, {
-      callback = function()
-        require("lint").try_lint()
-      end,
-    })
-  end,
+      markdown = { "markdownlint-cli2" },
+    },
+  },
 }
