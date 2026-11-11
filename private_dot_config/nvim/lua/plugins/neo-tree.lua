@@ -25,7 +25,7 @@ return {
     {
       "<leader>gM",
       function()
-        local base = util.default_branch()
+        local base = util.review_base()
         if base then
           patch_git_status()
           require("neo-tree.command").execute({

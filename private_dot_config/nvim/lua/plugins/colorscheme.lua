@@ -59,7 +59,8 @@ return {
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "catppuccin",
+      -- not "catppuccin": nvim 0.12 bundles a colors/catppuccin.vim that shadows the plugin
+      colorscheme = "catppuccin-latte",
     },
   },
 }
