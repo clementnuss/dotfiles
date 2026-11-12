@@ -1,12 +1,17 @@
 #!/bin/sh
 # connect kopia to the Synology WebDAV repo at <url>/backup/kopia-<hostname>/; secrets from rbw
+# usage: kopia-connect [--create]   (--create initializes a new repo at that path)
 set -eu
 
 command -v kopia >/dev/null 2>&1 || { echo "kopia-connect: kopia missing — chezmoi apply + yay first"; exit 1; }
 command -v rbw >/dev/null 2>&1 || { echo "kopia-connect: rbw missing — sudo pacman -S rbw"; exit 1; }
 
+action=connect
+[ "${1:-}" = --create ] && action=create
+
 if kopia repository status >/dev/null 2>&1; then
     echo "kopia-connect: already connected"
+    kopia policy set --global --compression=zstd-fastest >/dev/null
     exec kopia repository status
 fi
 
@@ -16,9 +21,11 @@ user=$(rbw get syno-nuss-roy -f username)
 pass=$(rbw get syno-nuss-roy -f password)
 
 KOPIA_PASSWORD="$(rbw get kopia-password)" \
-    kopia repository connect webdav \
+    kopia repository "$action" webdav \
     --url "$url" \
     --webdav-username "$user" \
     --webdav-password "$pass"
 
+# policy lives in the repo; this keeps every repo compressed
+kopia policy set --global --compression=zstd-fastest >/dev/null
 kopia repository status

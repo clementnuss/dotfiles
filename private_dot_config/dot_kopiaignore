@@ -1,0 +1,9 @@
+# kopia ignore rules for the ~/.config source (gitignore syntax)
+/chromium/OptGuideOnDeviceModel/
+/chromium/component_crx_cache/
+/chromium/screen_ai/
+/chromium/WasmTtsEngine/
+Cache/
+Code Cache/
+GPUCache/
+CacheStorage/

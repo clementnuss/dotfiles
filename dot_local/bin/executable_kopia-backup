@@ -1,0 +1,22 @@
+#!/bin/sh
+# snapshot the selected paths, at most once a day; run hourly by kopia-backup.timer (AC-only)
+set -eu
+
+stamp="${XDG_STATE_HOME:-$HOME/.local/state}/kopia-backup/last-success"
+
+if [ "${1:-}" != --force ] && [ -n "$(find "$stamp" -mmin -1380 2>/dev/null)" ]; then
+    exit 0
+fi
+
+kopia snapshot create \
+    "$HOME/git" \
+    "$HOME/Documents" \
+    "$HOME/.config" \
+    "$HOME/.kube" \
+    "$HOME/.atuin" \
+    "$HOME/.local/share/zoxide" \
+    "$HOME/.local/share/opencode" \
+    "$HOME/.local/state/opencode"
+
+mkdir -p "${stamp%/*}"
+touch "$stamp"

@@ -1,0 +1,12 @@
+[Unit]
+Description=Daily kopia backup of selected paths (kopia-backup)
+ConditionPathExists=%h/.config/kopia/repository.config
+# on battery the run is skipped, not failed; the hourly timer retries once on AC
+ConditionACPower=true
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/kopia-backup
+Nice=19
+IOSchedulingClass=idle
+ExecStopPost=/bin/sh -c '[ "$SERVICE_RESULT" = success ] || notify-send -u critical -a kopia "Backup failed" "journalctl --user -u kopia-snapshot"'

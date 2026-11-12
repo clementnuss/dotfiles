@@ -1,0 +1,3 @@
+# kopia ignore rules for the ~/git source (gitignore syntax; **/ = any depth)
+node_modules/
+**/.terraform/providers/
