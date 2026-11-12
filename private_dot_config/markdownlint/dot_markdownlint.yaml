@@ -1,0 +1,2 @@
+# Global base config, passed via --config by nvim; repo configs still override.
+MD013: false # line length
