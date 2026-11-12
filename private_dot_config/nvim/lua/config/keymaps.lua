@@ -1,9 +1,22 @@
 local ss = require("smart-splits")
 
-vim.keymap.set("n", "<A-h>", ss.move_cursor_left)
+-- no-neck-pain's padding windows bounce focus straight back, so smart-splits never
+-- sees an edge and never hands off to tmux: treat a padding neighbour as the edge
+local function move(dir, key)
+  return function()
+    local nr = vim.fn.winnr(key)
+    if nr ~= vim.fn.winnr() and vim.bo[vim.fn.winbufnr(nr)].filetype == "no-neck-pain" then
+      require("smart-splits.backend").move(dir)
+    else
+      ss["move_cursor_" .. dir]()
+    end
+  end
+end
+
+vim.keymap.set("n", "<A-h>", move("left", "h"))
 vim.keymap.set("n", "<A-k>", ss.move_cursor_up)
 vim.keymap.set("n", "<A-j>", ss.move_cursor_down)
-vim.keymap.set("n", "<A-l>", ss.move_cursor_right)
+vim.keymap.set("n", "<A-l>", move("right", "l"))
 vim.keymap.set("n", "<A-\\>", "<C-w>p")
 
 vim.keymap.set("n", "<C-h>", ss.resize_left)
