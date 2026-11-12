@@ -1,0 +1,12 @@
+#!/bin/sh
+# fzf-help CLI_OPTIONS_CMD: help text on stdin -> "LINE:OPTION", one per option.
+# Unlike the default: accepts Go-style -single.dash flags, lists subcommands from
+# "...Commands:" sections, only takes options at the start of a line (so "see
+# also -foo" mentions don't duplicate entries), and strips the bold/OSC 8
+# hyperlink escapes newer coreutils wrap options in.
+exec perl -ne '
+  s/\e\]8;.*?(?:\e\\|\a)|\e\[[0-9;]*m//g;
+  if (/^\S/) { $cmds = /command.*:\s*$/i }
+  elsif ($cmds && /^\s+([A-Za-z][\w-]*)(?:,\s*[\w-]+)*(?:\s{2,}|\s*$)/) { print "$.:$1\n" unless $seen{$1}++ }
+  while (/(?:^\s+|\G,\s*)\K(--?[A-Za-z0-9][\w-]*(?:\.[\w-]+)*)(?![\w-])/g) { print "$.:$1\n" unless $seen{$1}++ }
+'

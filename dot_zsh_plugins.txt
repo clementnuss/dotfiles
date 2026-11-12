@@ -4,6 +4,9 @@ olets/zsh-abbr kind:defer
 
 zsh-users/zsh-completions path:src kind:fpath
 
+# fzf picker for flags parsed from `<cmd> --help` (bound in .zshrc)
+BartSte/fzf-help path:src/fzf-help.zsh
+
 belak/zsh-utils path:editor
 belak/zsh-utils path:history
 belak/zsh-utils path:prompt

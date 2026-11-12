@@ -59,6 +59,13 @@ zle -N vi-yank-clipboard
 bindkey -M vicmd 'y' vi-yank-clipboard
 bindkey -M visual 'y' vi-yank-clipboard
 
+# fzf-help: pick flags from `<cmd> --help`; help-options handles Go -flags.
+# ^O: cross-hand with HRM ctrl on a; ^A is taken, compinit claims the ^X family
+export CLI_OPTIONS_CMD=help-options
+zle -N fzf-help-widget
+bindkey -M viins '^O' fzf-help-widget
+bindkey -M vicmd '^O' fzf-help-widget
+
 # order matters: atuin loads after fzf so it owns ^R
 zsh-defer eval "$(fzf --zsh)"
 zsh-defer eval "$(atuin init zsh)"
