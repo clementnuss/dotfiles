@@ -20,8 +20,13 @@ command -v checkupdates >/dev/null || {
     exit 1
 }
 
-PENDING=$(checkupdates 2>/dev/null)
-RC=$?
+# a Persistent catch-up fires right at resume, before wifi is back: retry on error
+for TRY in 1 2 3 4 5 6; do
+    PENDING=$(checkupdates)
+    RC=$?
+    [ "$RC" -eq 1 ] || break
+    [ "$TRY" -lt 6 ] && { echo "checkupdates errored (try $TRY/6), retrying in 30s"; sleep 30; }
+done
 # checkupdates exit codes: 0 = updates available, 2 = none, 1 = error
 if [ "$RC" -eq 2 ]; then
     echo 'no updates pending - up to date'
