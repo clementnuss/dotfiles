@@ -75,6 +75,20 @@ zsh-defer eval "$(zoxide init zsh)"
 alias task='go-task'
 alias wifitui='wifitui --theme="$HOME/.config/wifitui/theme.toml"'
 
+# logview FILE | cmd | logview: read-only nvim that follows the file (:Follow), stdin buffered to a temp file
+logview() {
+  if [[ -t 0 ]]; then
+    nvim -R -c Follow "$@"
+    return
+  fi
+  local tmp=$(mktemp --suffix=.log) pid
+  cat > "$tmp" &
+  pid=$!
+  nvim -R -c Follow "$tmp" < /dev/tty
+  kill $pid 2>/dev/null
+  rm -f "$tmp"
+}
+
 # creds [filter]: source one dev-docs/credentials/*.env; calling again unloads the previous one
 _CREDS_BASE="$HOME/git/github.com/clementnuss/dev-docs/credentials"
 creds() {
