@@ -37,7 +37,7 @@ hl.bind(mainMod .. " + F",         hl.dsp.window.fullscreen({ action = "toggle" 
 hl.bind(mainMod .. " + V",         hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + B",         hl.dsp.exec_cmd(browser))
 hl.bind(mainMod .. " + SHIFT + T", hl.dsp.exec_cmd(term .. " -e btop"))
-hl.bind(mainMod .. " + SHIFT + F", hl.dsp.exec_cmd(term .. " -e yazi"))
+hl.bind(mainMod .. " + SHIFT + F", hl.dsp.exec_cmd("strata"))
 hl.bind(mainMod .. " + C",         hl.dsp.exec_cmd("omni-shell-ipc control toggle"))
 hl.bind(mainMod .. " + comma",     hl.dsp.exec_cmd("omni-shell-ipc control clearNotifications"))
 hl.bind(mainMod .. " + CTRL + V",  hl.dsp.exec_cmd(bin .. "clipboard-pick"))
