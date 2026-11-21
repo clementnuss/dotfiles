@@ -38,6 +38,7 @@ OFFICIAL_PACKAGES=(
     hyprpolkitagent
     jq
     k9s
+    kernel-modules-hook
     kubectl
     lazygit
     neovim
@@ -109,6 +110,9 @@ AUR_PACKAGES=(
 )
 
 sudo pacman -S --needed --noconfirm "${OFFICIAL_PACKAGES[@]}"
+
+# kernel-modules-hook: prunes the kept modules of old kernels after reboot
+sudo systemctl enable linux-modules-cleanup.service
 
 if command -v yay >/dev/null; then
     yay -S --needed --noconfirm "${AUR_PACKAGES[@]}"

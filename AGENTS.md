@@ -212,6 +212,11 @@ qemu + OVMF, same ISO version the USB carries).
   `sudo faillock --user cjmnuss --reset` clears it. Sudo/TTY still
   faillock: fumbling sudo 3× has the same 10-min lockout (accepted —
   the break-glass is the reset command or a reboot → autologin).
+- **A kernel upgrade deletes the running kernel's modules** (pacman keeps
+  one version): until reboot, `modprobe` can't load anything (2026-11-21:
+  couldn't reload amd_pmf). `kernel-modules-hook` keeps them until the next
+  boot; `linux-modules-cleanup.service` prunes them. Unload without the
+  files: `rmmod` (`modprobe -r` needs them).
 - **A logged-in spare VT is a standing lockscreen bypass** — 2026-11-02:
   a days-old tty2 session allowed a wedged hyprlock to be killed from its
   shell, no password asked. (The 08:27:56 "hyprlock crash" in coredumpctl
