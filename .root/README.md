@@ -114,6 +114,18 @@ desk distance; 255 is fully blurred). Installed by the root-files script.
 Retune live with `v4l2-ctl -d /dev/v4l/by-id/usb-Alpha_Imaging_Tech._Corp._Razer_Kiyo-video-index0 -c focus_absolute=<n>`,
 then update the rule. A web app can re-enable autofocus; a replug resets it.
 
+## Battery charge limit (70%)
+
+`etc/modprobe.d/cros-charge-control.conf` makes `cros_charge_control` probe on
+Framework (off upstream: the firmware has its own limit, keep that at 100% so
+the two never fight), exposing `BAT1/charge_control_end_threshold`;
+`etc/udev/rules.d/99-battery-charge-limit.rules` writes 70 when the driver
+binds (boot, module reload). Installed by the root-files script, which also
+reloads the module. Full charge for a trip:
+`echo 100 | sudo tee /sys/class/power_supply/BAT1/charge_control_end_threshold`
+(next boot restores 70). Check: `cat /sys/class/power_supply/BAT1/charge_control_end_threshold`.
+Undo: remove both files, `sudo modprobe -r cros_charge_control && sudo modprobe cros_charge_control`.
+
 ## SANE airscan scanner entry (Brother MFC-L8690CDW) — NOT installed (optional)
 
 **Deliberately not installed**: scan-to-FTP from the printer is the primary

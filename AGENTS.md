@@ -72,6 +72,8 @@ qemu + OVMF, same ISO version the USB carries).
 - `/etc/modules-load.d/i2c-dev.conf` — **installed** ✓
 - kanata udev rule + uinput module-load — **installed** ✓
 - `/etc/modules-load.d/tun.conf` (pasta/podman networking) — **installed** ✓
+- battery charge limit 70% (`cros_charge_control` modprobe option + udev rule;
+  firmware limit stays at 100%) — **installed** ✓ (active since the 2026-11-21 reboot)
 - `/etc/nftables.conf` firewall — **installed** ✓
 
 ## Operational gotchas (learned the hard way)

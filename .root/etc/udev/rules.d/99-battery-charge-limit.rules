@@ -1,0 +1,2 @@
+# plugged in ~95% of the time: cap charging at 70%; the attribute only exists once the driver binds
+ACTION=="bind", SUBSYSTEM=="platform", DRIVER=="cros-charge-control", RUN+="/bin/sh -c 'for f in /sys/class/power_supply/BAT*/charge_control_end_threshold; do echo 70 > $$f; done'"
