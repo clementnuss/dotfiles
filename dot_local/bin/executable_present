@@ -1,0 +1,130 @@
+#!/bin/bash
+# present [mirror|stage|off] [OUTPUT]: give the external screen one dedicated
+# `present` workspace; workspaces 1-10 stay on the laptop (hyprland.lua reads
+# the flag file). Idle is inhibited and notifications muted while on.
+#   mirror  wl-mirror of the laptop panel, letterboxed (default)
+#   stage   send the focused window there, fullscreen (e.g. slidev's audience view)
+# Running a mode again, or `off`, ends it.
+
+set -u
+SRC=eDP-1
+DIR="$XDG_RUNTIME_DIR/present"
+FLAG="$DIR/output"
+PGID="$DIR/pgid"
+MODE="$DIR/mode"
+DND="$DIR/dnd-was-off"
+
+running() { [ -f "$PGID" ] && kill -0 -- "-$(cat "$PGID")" 2>/dev/null; }
+
+lua() { hyprctl eval "$1" >/dev/null; }
+
+teardown() {
+    # staged windows come back to the laptop's current workspace
+    lua "local home = hl.get_active_workspace('$SRC')
+        for _, w in ipairs(hl.get_workspace_windows('name:present')) do
+            local sel = 'address:' .. w.address
+            hl.dispatch(hl.dsp.window.fullscreen({ action = 'unset', window = sel }))
+            if home then hl.dispatch(hl.dsp.window.move({ workspace = home.name, window = sel, follow = false })) end
+        end"
+    rm -f "$FLAG" "$PGID" "$MODE"
+    hyprctl reload config-only >/dev/null
+    if [ -f "$DND" ]; then
+        [ "$(omni-shell-ipc control dndState)" = on ] && omni-shell-ipc control dnd >/dev/null
+        rm -f "$DND"
+    fi
+    notify-send -a present "Presenting stopped"
+}
+
+# Runs detached as its own process group; `off` signals the whole group.
+run() {
+    local mode=$1 ext=$2 win=${3:-} home holder
+    mkdir -p "$DIR"
+    echo "$$" >"$PGID"
+    echo "$mode" >"$MODE"
+    trap teardown EXIT
+    trap 'exit 0' TERM INT HUP
+
+    home=$(hyprctl monitors -j | jq -r --arg m "$SRC" '.[] | select(.name == $m) | .activeWorkspace.name')
+    echo "$ext" >"$FLAG"
+    hyprctl reload config-only >/dev/null
+
+    if [ "$(omni-shell-ipc control dndState)" = off ]; then
+        omni-shell-ipc control dnd >/dev/null && touch "$DND"
+    fi
+
+    # sleep:idle = what hypridle and the caffeine tile honour
+    local inhibit=(systemd-inhibit --what=sleep:idle --who=present --why="Presenting on $ext")
+    if [ "$mode" = mirror ]; then
+        "${inhibit[@]}" wl-mirror --fullscreen --title present-mirror "$SRC" &
+        holder=$!
+        for _ in $(seq 1 50); do
+            hyprctl clients -j | jq -e '.[] | select(.title == "present-mirror")' >/dev/null && break
+            sleep 0.1
+        done
+    else
+        "${inhibit[@]}" sleep infinity &
+        holder=$!
+        lua "hl.dispatch(hl.dsp.window.move({ workspace = 'name:present', window = 'address:$win', follow = false }))
+            hl.dispatch(hl.dsp.window.fullscreen({ action = 'set', window = 'address:$win' }))"
+    fi
+
+    # Rules only place new workspaces; evacuate the ones already on the external.
+    lua "for _, ws in ipairs(hl.get_workspaces()) do
+            if ws.monitor and ws.monitor.name == '$ext' and not ws.special and ws.name ~= 'present' then
+                hl.dispatch(hl.dsp.focus({ workspace = ws.name }))
+                hl.dispatch(hl.dsp.workspace.move({ monitor = '$SRC' }))
+            end
+        end
+        hl.dispatch(hl.dsp.focus({ workspace = '${home:-1}' }))"
+
+    notify-send -a present "Presenting on $ext ($mode)" "present off to stop"
+    wait "$holder"
+}
+
+start() {
+    local mode=$1 ext=${2:-} win=
+    if [ -z "$ext" ]; then
+        ext=$(hyprctl monitors -j | jq -r --arg m "$SRC" '[.[] | select(.name != $m)][0].name // empty')
+    fi
+    if [ -z "$ext" ]; then
+        notify-send -a present -u critical "present" "No external display connected"
+        exit 1
+    fi
+    if [ "$mode" = stage ]; then
+        win=$(hyprctl activewindow -j | jq -r '.address // empty')
+        if [ -z "$win" ]; then
+            notify-send -a present -u critical "present" "No focused window to stage"
+            exit 1
+        fi
+    fi
+    setsid -f "$0" _run "$mode" "$ext" "$win" >/dev/null 2>&1
+}
+
+stop() {
+    local pg
+    pg=$(cat "$PGID" 2>/dev/null)
+    if running && [ "${pg:-0}" -gt 1 ]; then
+        kill -TERM -- "-$pg"
+    elif [ -f "$FLAG" ]; then
+        teardown # leftover from a killed run
+    fi
+}
+
+# Same mode again = off; the other mode = switch.
+toggle() {
+    if running; then
+        local cur
+        cur=$(cat "$MODE" 2>/dev/null)
+        stop
+        [ "$cur" = "$1" ] && return
+        while running; do sleep 0.1; done
+    fi
+    start "$1" "${2:-}"
+}
+
+case "${1:-mirror}" in
+    mirror | stage) toggle "$1" "${2:-}" ;;
+    off) stop ;;
+    _run) run "$2" "$3" "${4:-}" ;;
+    *) echo "usage: present [mirror|stage|off] [OUTPUT]" >&2; exit 2 ;;
+esac

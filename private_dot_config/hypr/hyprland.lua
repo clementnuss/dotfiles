@@ -45,6 +45,8 @@ hl.bind(mainMod .. " + comma",     hl.dsp.exec_cmd("omni-shell-ipc control clear
 hl.bind(mainMod .. " + CTRL + V",  hl.dsp.exec_cmd(bin .. "clipboard-pick"))
 hl.bind(mainMod .. " + P",         hl.dsp.exec_cmd(bin .. "screenshot region"))
 hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd(bin .. "screenshot window"))
+hl.bind(mainMod .. " + S",         hl.dsp.exec_cmd(bin .. "present stage")) -- focused window → projector
+hl.bind(mainMod .. " + M",         hl.dsp.exec_cmd(bin .. "present mirror"))
 
 for i = 1, 9 do
     hl.bind(mainMod .. " + " .. i,         hl.dsp.focus({ workspace = i }))
@@ -73,5 +75,28 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("wl-paste --type text --watch " .. bin .. "cliphist-next store")
 end)
 
--- hyprmoncfg's generated monitor rules; must stay last
+-- present mode (~/.local/bin/present): the flag file holds the external output.
+-- Runs on config.reloaded so it overrides hyprmoncfg's workspace plan, which loads after this.
+hl.on("config.reloaded", function()
+    local f = io.open((os.getenv("XDG_RUNTIME_DIR") or "") .. "/present/output", "r")
+    if not f then return end
+    local out = f:read("l")
+    f:close()
+    if not out or out == "" then return end
+    for i = 1, 10 do
+        hl.workspace_rule({ workspace = tostring(i), monitor = "eDP-1" })
+    end
+    hl.workspace_rule({ workspace = "name:present", monitor = out, default = true })
+    hl.window_rule({
+        name  = "present-mirror",
+        match = { title = "^present-mirror$" },
+        workspace = "name:present",
+        fullscreen = true,
+        no_initial_focus = true,
+        no_focus = true,
+        no_follow_mouse = true,
+    })
+end)
+
+-- Added by hyprmoncfg: its generated monitor rules load last, so nothing before this can override the applied layout.
 do local path = os.getenv("HOME") .. "/.config/hypr/hyprmoncfg-monitors.lua"; local file = io.open(path, "r"); if file then file:close(); dofile(path) end end
