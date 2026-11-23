@@ -313,6 +313,14 @@ evidence), refreshes the keyring FIRST (classic breakage prevention),
 runs the full upgrade, and toasts the outcome with a `.pacnew` count
 (the pacdiff duty) and a post-run **failed-units smoke check**
 (`systemctl --failed` → the toast goes critical if anything's down).
+**Mirror freshness**: pacman takes the sync DB from the FIRST `Server`,
+so a stale first mirror freezes the DB — upgrades 404 (old versions
+already pruned elsewhere) or, worse, checkupdates reports "up to date"
+forever (2026-11-22: mirror.metanet.ch 6 days stale). The script aborts
+with a critical toast if the first mirror's `lastsync` is >48h old;
+`etc/pacman.d/mirrorlist` is curated here (Arch's GeoDNS mirror first)
+and auto-installed. pacman-mirrorlist upgrades leave a `.pacnew` for
+it — ignore/delete that one, ours wins.
 AUR/yay is deliberately NOT auto-updated —
 unattended PKGBUILD execution is a code-execution risk. Unattended
 Arch upgrades still carry real risk (news-level interventions won't

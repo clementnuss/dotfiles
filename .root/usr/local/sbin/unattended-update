@@ -27,6 +27,21 @@ for TRY in 1 2 3 4 5 6; do
     [ "$RC" -eq 1 ] || break
     [ "$TRY" -lt 6 ] && { echo "checkupdates errored (try $TRY/6), retrying in 30s"; sleep 30; }
 done
+
+# the first mirror supplies the sync DB: stale = 404s on upgrade, or a false "up to date" forever
+MIRROR=$(sed -n 's|^Server *= *\(.*\)/\$repo/os/\$arch *$|\1|p' /etc/pacman.d/mirrorlist | head -n1)
+SYNCED=$(curl -fsS -m 20 "$MIRROR/lastsync" 2>/dev/null)
+case "$SYNCED" in
+    ''|*[!0-9]*) echo "warning: cannot read $MIRROR/lastsync, freshness unchecked" ;;
+    *)
+        AGE_H=$(( ($(date +%s) - SYNCED) / 3600 ))
+        echo "first mirror $MIRROR last synced ${AGE_H}h ago"
+        if [ "$AGE_H" -gt 48 ]; then
+            notify critical 'System update failed' "first mirror is ${AGE_H}h stale ($MIRROR) - fix /etc/pacman.d/mirrorlist"
+            exit 1
+        fi ;;
+esac
+
 # checkupdates exit codes: 0 = updates available, 2 = none, 1 = error
 if [ "$RC" -eq 2 ]; then
     echo 'no updates pending - up to date'
