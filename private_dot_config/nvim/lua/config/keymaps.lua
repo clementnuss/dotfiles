@@ -28,3 +28,7 @@ vim.keymap.set("n", "<leader><leader>h", ss.swap_buf_left)
 vim.keymap.set("n", "<leader><leader>j", ss.swap_buf_down)
 vim.keymap.set("n", "<leader><leader>k", ss.swap_buf_up)
 vim.keymap.set("n", "<leader><leader>l", ss.swap_buf_right)
+
+local gobrowse = require("config.gobrowse")
+vim.keymap.set({ "n", "x" }, "<leader>gB", function() gobrowse.browse(false) end, { desc = "Git Browse (open)" })
+vim.keymap.set({ "n", "x" }, "<leader>gY", function() gobrowse.browse(true) end, { desc = "Git Browse (copy)" })
