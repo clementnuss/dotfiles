@@ -1,7 +1,9 @@
 {
   "themeName": "Catppuccin Latte",
-  "fontSize": 15,
+  "fontSize": 13,
+  "xsFontSize": 9,
   "padding": 7,
+  "barHeight": 28,
   "opacity": 0.9,
   "opaqueOpacity": 0.9,
   "colors": {
