@@ -39,6 +39,8 @@ hl.bind(mainMod .. " + B",         hl.dsp.exec_cmd(browser))
 hl.bind(mainMod .. " + SHIFT + T", hl.dsp.exec_cmd(term .. " -e btop"))
 hl.bind(mainMod .. " + SHIFT + F", hl.dsp.exec_cmd("strata"))
 hl.bind(mainMod .. " + C",         hl.dsp.exec_cmd("omni-shell-ipc control toggle"))
+-- logind ignores the key only while power-key-inhibit.service runs
+hl.bind("XF86PowerOff",           hl.dsp.exec_cmd("omni-shell-ipc control toggle"))
 hl.bind(mainMod .. " + comma",     hl.dsp.exec_cmd("omni-shell-ipc control clearNotifications"))
 hl.bind(mainMod .. " + CTRL + V",  hl.dsp.exec_cmd(bin .. "clipboard-pick"))
 hl.bind(mainMod .. " + P",         hl.dsp.exec_cmd(bin .. "screenshot region"))

@@ -1,0 +1,12 @@
+[Unit]
+Description=Hand the power button to Hyprland (logind handle-power-key inhibitor)
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/systemd-inhibit --what=handle-power-key --who=hyprland --why="Power button opens the control center" --mode=block sleep infinity
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=graphical-session.target
