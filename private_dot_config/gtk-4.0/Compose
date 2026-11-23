@@ -1,0 +1,2 @@
+# GTK's builtin table wouldn't compose Caps + - → ± in ghostty; a user file replaces it, so load the full system one.
+include "%L"
