@@ -5,8 +5,9 @@ local function buf_dir()
   return (dir ~= "" and vim.fn.isdirectory(dir) == 1) and dir or vim.uv.cwd()
 end
 
--- the default branch (main/master) of the remote the current branch tracks, then upstream,
--- then origin: in a fork, origin/master can be years stale. Local main/master is the fallback.
+-- the default branch (main/master, or vim.g.review_branch set by :ReviewBase) of the remote the
+-- current branch tracks, then upstream, then origin: in a fork, origin/master can be years stale.
+-- The local branch is the fallback.
 function M.default_branch()
   local dir = buf_dir()
   local function out(args)
@@ -23,20 +24,21 @@ function M.default_branch()
       table.insert(remotes, r)
     end
   end
+  local want = vim.g.review_branch
   for _, r in ipairs(remotes) do
     local head = (out({ "rev-parse", "--abbrev-ref", r .. "/HEAD" }) or ""):match("^" .. r .. "/(.+)")
-    for _, name in ipairs(head and { head } or { "main", "master" }) do
+    for _, name in ipairs(want and { want } or head and { head } or { "main", "master" }) do
       if ok(r .. "/" .. name) then
         return r .. "/" .. name
       end
     end
   end
-  for _, name in ipairs({ "main", "master" }) do
+  for _, name in ipairs(want and { want } or { "main", "master" }) do
     if ok(name) then
       return name
     end
   end
-  vim.notify("no main/master branch here", vim.log.levels.WARN)
+  vim.notify("no " .. (want or "main/master") .. " branch here", vim.log.levels.WARN)
 end
 
 -- where the current branch forked from main/master, i.e. what GitHub diffs a PR against:

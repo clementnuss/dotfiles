@@ -18,7 +18,7 @@ return {
             end
           end)
         end,
-        desc = "Diff against main/master",
+        desc = "Diff against review base (:ReviewBase)",
       },
       {
         "<leader>gr",

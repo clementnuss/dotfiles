@@ -36,7 +36,7 @@ return {
           })
         end
       end,
-      desc = "Changed files vs main/master",
+      desc = "Changed files vs review base (:ReviewBase)",
     },
     {
       "<leader>gv",
