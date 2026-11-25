@@ -157,7 +157,9 @@ lock the account for 600 s — even the correct password is refused, at
 hyprlock, TTYs and sudo alike). A lockscreen is not a login surface —
 the data boundary is LUKS and the login path is tty1 autologin anyway.
 This stack verifies the local unix password and nothing else; sudo/su/
-TTY keep their faillock.
+TTY keep their faillock, with the threshold raised from 3 to 6 by
+`etc/security/faillock.conf` (auto-installed by the run_onchange script;
+undo = re-comment `deny` there and apply).
 
 Break-glass if you ever fail-lock yourself via the sudo/TTY paths:
 from any open session run `sudo faillock --user cjmnuss --reset`, or
