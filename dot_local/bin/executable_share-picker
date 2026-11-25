@@ -1,0 +1,19 @@
+#!/bin/bash
+# xdph custom_picker_binary: Chromium/Electron open ~3 ScreenCast sessions per
+# share (preview + final), each prompting; replay the last pick for a few seconds.
+
+CACHE="$XDG_RUNTIME_DIR/share-picker.last"
+TTL=10
+
+if [ -s "$CACHE" ] && [ $(( $(date +%s) - $(stat -c %Y "$CACHE") )) -lt "$TTL" ]; then
+    cat "$CACHE"
+    exit 0
+fi
+
+out=$(/usr/bin/hyprland-share-picker "$@")
+rc=$?
+printf '%s\n' "$out"
+if [ $rc -eq 0 ] && grep -q '\[SELECTION\]' <<<"$out"; then
+    printf '%s\n' "$out" > "$CACHE"
+fi
+exit $rc
