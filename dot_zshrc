@@ -3,6 +3,8 @@ export GPG_TTY=$TTY
 export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/rbw/ssh-agent-socket"
 export KIND_EXPERIMENTAL_PROVIDER=podman
 export PNPM_HOME="$HOME/.local/share/pnpm"
+# one file per source; gke.yaml is rebuilt by gke-login
+export KUBECONFIG="$HOME/.kube/gke.yaml:$HOME/.kube/homelab.yaml"
 
 typeset -U path
 path=("$PNPM_HOME" $path "${GOPATH:-$HOME/go}/bin" "$HOME/.krew/bin" "$HOME/.local/bin")
@@ -137,6 +139,34 @@ s3user() {
            | bao kv put $kv - >/dev/null && echo "removed: $2" ;;
     *)   echo "usage: s3user ls | add <name> | get <name> | rm <name>"; return 1 ;;
   esac
+}
+
+# gke-login [project...]: refresh gcloud auth, rebuild ~/.kube/gke.yaml from all GKE clusters (default: every visible project)
+gke-login() {
+  gcloud auth print-access-token >/dev/null 2>&1 || gcloud auth login || return 1
+  local projects=("$@") dir tmp p name loc ctx
+  (( $#projects )) || projects=(${(f)"$(gcloud projects list --format='value(projectId)')"})
+  (( $#projects )) || { echo "no projects visible"; return 1 }
+  # fresh path, not an empty file: gcloud backs up an existing kubeconfig before writing
+  dir=$(mktemp -d) || return 1
+  tmp=$dir/config
+  for p in $projects; do
+    gcloud container clusters list --project "$p" --format='value(name,location)' 2>/dev/null |
+      while read -r name loc; do
+        # no '/' or ':' in names: kubesess uses them as cache file names inside $KUBECONFIG
+        ctx="gke-${p#victoriametrics-}-$name"
+        if KUBECONFIG=$tmp gcloud container clusters get-credentials "$name" --location "$loc" --project "$p" --quiet </dev/null 2>/dev/null &&
+          KUBECONFIG=$tmp kubectl config rename-context "gke_${p}_${loc}_${name}" "$ctx" </dev/null >/dev/null; then
+          echo "  $ctx"
+        else
+          echo "  failed: $p/$name ($loc)" >&2
+        fi
+      done
+  done
+  # no default context: pick one per shell with kc
+  KUBECONFIG=$tmp kubectl config unset current-context >/dev/null
+  [[ -f $tmp ]] && mv "$tmp" ~/.kube/gke.yaml
+  rm -rf "$dir"
 }
 
 [[ -f ~/.zshrc-local ]] && source ~/.zshrc-local
