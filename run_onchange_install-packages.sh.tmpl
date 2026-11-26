@@ -1,125 +1,36 @@
 #!/bin/bash
 set -euo pipefail
 
+# lists live in .chezmoidata/packages.yaml; editing them changes this rendered script, so apply re-runs it
+{{- $groups := list }}
+{{- range $name, $g := .packages }}
+{{-   if or (not (hasKey $g "profiles")) (has $.profile $g.profiles) }}
+{{-     $groups = append $groups $g }}
+{{-   end }}
+{{- end }}
+
 OFFICIAL_PACKAGES=(
-    7zip
-    atuin
-    bat
-    bluez
-    bluez-utils
-    brightnessctl
-    btop
-    chezmoi
-    chromium
-    clamav
-    cliphist
-    cups
-    ddcutil
-    dog
-    ffmpeg
-    fluxcd
-    fuse-overlayfs
-    fuzzel
-    fzf
-    ghostscript
-    ghostty
-    ghq
-    git-delta
-    git-lfs
-    gke-gcloud-auth-plugin
-    google-cloud-cli
-    go
-    go-task
-    gpg-tui
-    gpu-screen-recorder
-    grim
-    gsfonts
-    hypridle
-    hyprland
-    hyprlock
-    hyprpolkitagent
-    jq
-    k9s
-    kernel-modules-hook
-    kubectl
-    lazygit
-    neovim
-    networkmanager
-    nftables
-    nodejs
-    noto-fonts
-    noto-fonts-cjk
-    noto-fonts-emoji
-    npm
-    pacman-contrib
-    pipewire
-    pipewire-alsa
-    pipewire-audio
-    pipewire-pulse
-    pnpm
-    podman
-    podman-docker
-    power-profiles-daemon
-    pulsemixer
-    python-gobject
-    rbw
-    rclone
-    rofimoji
-    sane-airscan
-    satty
-    simple-scan
-    slurp
-    snap-pac
-    snapper
-    sof-firmware
-    sops
-    starship
-    swaybg
-    talosctl
-    tmux
-    ttf-jetbrains-mono-nerd
-    udiskie
-    udisks2
-    uwsm
-    wireguard-tools
-    wireplumber
-    wl-clipboard
-    wl-mirror
-    wtype
-    xdg-terminal-exec
-    yazi
-    zoxide
-    zsh
+{{- range $groups }}{{ range dig "official" list . }}
+    {{ . }}
+{{- end }}{{ end }}
 )
 
 AUR_PACKAGES=(
-    caligula-bin
-    ddcutil-service
-{{- if eq .profile "work" }}
-    drata-agent
-{{- end }}
-    hyprmoncfg
-    kanata-bin
-    kind
-    kopia-bin
-    kubesess-bin
-    localsend-bin
-    masterpdfeditor
-    omni-launcher
-    omni-shell
-    seadrive-gui
-    strata-bin
-    vial-appimage
-    wifitui
+{{- range $groups }}{{ range dig "aur" list . }}
+    {{ . }}
+{{- end }}{{ end }}
 )
 
 sudo pacman -S --needed --noconfirm "${OFFICIAL_PACKAGES[@]}"
+# the list is the source of truth for install reason: a listed package must never turn up as an orphan
+sudo pacman -D --asexplicit --quiet "${OFFICIAL_PACKAGES[@]}" >/dev/null
 
 # kernel-modules-hook: prunes the kept modules of old kernels after reboot
 sudo systemctl enable linux-modules-cleanup.service
 
 if command -v yay >/dev/null; then
     yay -S --needed --noconfirm "${AUR_PACKAGES[@]}"
+    sudo pacman -D --asexplicit --quiet "${AUR_PACKAGES[@]}" >/dev/null
 else
     echo "yay not found: skipping AUR packages" >&2
 fi

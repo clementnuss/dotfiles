@@ -323,10 +323,19 @@ qemu + OVMF, same ISO version the USB carries).
 
 ## Packages
 
-`run_onchange_install-packages.sh.tmpl` holds the full list (official + AUR)
-including the Hyprland desktop stack. Editing the list changes the script's
-hash, so the next `chezmoi apply` re-runs it — everything is installed with
-`--needed`, so it is idempotent.
+`.chezmoidata/packages.yaml` holds the lists (official + AUR), grouped;
+a group with `profiles:` installs only there. `run_onchange_install-packages.sh.tmpl`
+renders them, so editing the list changes the script's hash and the next
+`chezmoi apply` re-runs it — `--needed`, idempotent. It also marks every listed
+package `--asexplicit`: the list is the source of truth for install reason,
+so a listed package never shows up as an orphan.
+
+The script only adds. **`pkg-drift`** reports the rest: explicitly installed
+but unlisted, listed but missing, orphans; `--prune` removes orphans not on
+the list (pacman confirms). Retiring a package = drop it from the list +
+`sudo pacman -D --asdeps <pkg>` → it becomes an orphan → `pkg-drift --prune`.
+AUR `-debug` split packages are off via `~/.config/pacman/makepkg.conf`
+(`OPTIONS+=(!debug)`).
 
 ## Commits
 

@@ -1,0 +1,145 @@
+# Package lists, read by run_onchange_install-packages.sh.tmpl and ~/.local/bin/pkg-drift.
+# A group with `profiles:` installs only on those profiles; without it, everywhere.
+packages:
+  system:
+    official:
+      - bluez
+      - bluez-utils
+      - clamav
+      - kernel-modules-hook
+      - networkmanager
+      - nftables
+      - pacman-contrib
+      - power-profiles-daemon
+      - snap-pac
+      - snapper
+      - sof-firmware
+      - udisks2
+      - wireguard-tools
+
+  audio:
+    official:
+      - pipewire
+      - pipewire-alsa
+      - pipewire-audio
+      - pipewire-pulse
+      - pulsemixer
+      - wireplumber
+
+  desktop:
+    official:
+      - brightnessctl
+      - cliphist
+      - ddcutil
+      - fuzzel
+      - ghostty
+      - gpu-screen-recorder
+      - grim
+      - hypridle
+      - hyprland
+      - hyprlock
+      - hyprpolkitagent
+      - python-gobject
+      - rofimoji
+      - satty
+      - slurp
+      - swaybg
+      - udiskie
+      - uwsm
+      - wl-clipboard
+      - wl-mirror
+      - wtype
+      - xdg-terminal-exec
+    aur:
+      - ddcutil-service
+      - hyprmoncfg
+      - kanata-bin
+      - omni-launcher
+      - omni-shell
+      - strata-bin
+      - wifitui
+
+  fonts:
+    official:
+      - noto-fonts
+      - noto-fonts-cjk
+      - noto-fonts-emoji
+      - ttf-jetbrains-mono-nerd
+
+  printing:
+    official:
+      - cups
+      - ghostscript # load-bearing optdep of cups-filters (print.md)
+      - gsfonts
+      - sane-airscan
+      - simple-scan
+
+  cli:
+    official:
+      - 7zip
+      - atuin
+      - bat
+      - btop
+      - chezmoi
+      - dog
+      - ffmpeg
+      - fzf
+      - ghq
+      - git-delta
+      - git-lfs
+      - gpg-tui
+      - jq
+      - lazygit
+      - neovim
+      - rbw
+      - rclone
+      - sops
+      - starship
+      - tmux
+      - yazi
+      - zoxide
+      - zsh
+    aur:
+      - caligula-bin
+
+  dev:
+    official:
+      - go
+      - go-task
+      - nodejs
+      - npm
+      - pnpm
+
+  containers:
+    official:
+      - fuse-overlayfs
+      - podman
+      - podman-docker
+    aur:
+      - kind
+
+  cloud:
+    official:
+      - fluxcd
+      - gke-gcloud-auth-plugin
+      - google-cloud-cli
+      - k9s
+      - kubectl
+      - talosctl
+    aur:
+      - kubesess-bin
+
+  apps:
+    official:
+      - chromium
+    aur:
+      - kopia-bin
+      - localsend-bin
+      - masterpdfeditor
+      - seadrive-gui
+      - vial-appimage
+
+  work:
+    profiles: [work]
+    aur:
+      - drata-agent

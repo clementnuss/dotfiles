@@ -1,0 +1,57 @@
+#!/bin/bash
+# Compare installed packages with the chezmoi list (.chezmoidata/packages.yaml).
+# usage: pkg-drift [--prune]   --prune removes orphans not in the list (pacman asks first)
+set -euo pipefail
+
+prune=false
+case ${1:-} in
+--prune) prune=true ;;
+"") ;;
+*)
+	echo "usage: pkg-drift [--prune]" >&2
+	exit 2
+	;;
+esac
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
+chezmoi data --format json | jq -r '
+	.profile as $p
+	| .packages[]
+	| select((.profiles // [$p]) | index($p))
+	| (.official // []) + (.aur // []) | .[]' | sort -u >"$tmp/listed"
+pacman -Qq | sort >"$tmp/installed"
+pacman -Qqe | sort >"$tmp/explicit"
+pacman -Qqdt | sort >"$tmp/orphans" || true # exits 1 when there are none
+
+section() {
+	local title=$1 hint=$2 file=$3
+	[ -s "$file" ] || return 0
+	printf '\n== %s (%d)\n' "$title" "$(wc -l <"$file")"
+	column -c "${COLUMNS:-100}" "$file"
+	printf '   -> %s\n' "$hint"
+}
+
+comm -13 "$tmp/listed" "$tmp/explicit" >"$tmp/unlisted"
+comm -23 "$tmp/listed" "$tmp/installed" >"$tmp/missing"
+# listed but installed as a dependency: would become an orphan (and prunable) once its dependent goes
+comm -12 "$tmp/listed" "$tmp/installed" | comm -23 - "$tmp/explicit" >"$tmp/asdeps"
+comm -23 "$tmp/orphans" "$tmp/listed" >"$tmp/prunable"
+
+section "explicitly installed, not listed" \
+	"add to packages.yaml, or demote: sudo pacman -D --asdeps <pkg> (then it shows up as an orphan if unneeded)" \
+	"$tmp/unlisted"
+section "listed, not installed" "chezmoi apply (or the install script) installs them" "$tmp/missing"
+section "listed, installed as dependency" "sudo pacman -D --asexplicit <pkg>" "$tmp/asdeps"
+section "orphans" "pkg-drift --prune" "$tmp/prunable"
+
+if [ ! -s "$tmp/unlisted" ] && [ ! -s "$tmp/missing" ] && [ ! -s "$tmp/asdeps" ] && [ ! -s "$tmp/prunable" ]; then
+	echo "no drift"
+fi
+
+if $prune && [ -s "$tmp/prunable" ]; then
+	echo
+	mapfile -t pkgs <"$tmp/prunable"
+	sudo pacman -Rns "${pkgs[@]}"
+fi
