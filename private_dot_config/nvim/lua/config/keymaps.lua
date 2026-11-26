@@ -33,8 +33,10 @@ local gobrowse = require("config.gobrowse")
 vim.keymap.set({ "n", "x" }, "<leader>gB", function() gobrowse.browse(false) end, { desc = "Git Browse (open)" })
 vim.keymap.set({ "n", "x" }, "<leader>gY", function() gobrowse.browse(true) end, { desc = "Git Browse (copy)" })
 
--- PR target for <leader>gm / <leader>gM, e.g. :ReviewBase cluster; no arg = back to main/master
+-- PR target for <leader>gm / <leader>gM, e.g. :ReviewBase cluster; no arg = back to main/master.
+-- Also moves gitsigns there, so ]h/[h follow without pressing <leader>gm.
 vim.api.nvim_create_user_command("ReviewBase", function(o)
   vim.g.review_branch = o.args ~= "" and o.args or nil
   vim.notify("review base: " .. (vim.g.review_branch or "main/master"))
+  require("config.util").gitsigns_review_base()
 end, { nargs = "?" })

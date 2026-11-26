@@ -55,6 +55,20 @@ function M.review_base()
   return vim.trim(r.stdout), branch
 end
 
+-- point gitsigns (signs, ]h/[h, previews) at review_base() in every buffer
+function M.gitsigns_review_base()
+  local base, branch = M.review_base()
+  if not base then
+    return
+  end
+  -- callback: report a failure (e.g. a buffer from another repo) instead of a stack trace
+  require("gitsigns").change_base(base, true, function(err)
+    if err then
+      vim.notify("diff against " .. branch .. ": " .. err, vim.log.levels.WARN)
+    end
+  end)
+end
+
 -- true while no-neck-pain's side windows are up in this tab
 function M.centered()
   for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do

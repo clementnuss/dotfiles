@@ -1,5 +1,3 @@
-local review_base = require("config.util").review_base
-
 return {
   {
     "lewis6991/gitsigns.nvim",
@@ -7,16 +5,7 @@ return {
       {
         "<leader>gm",
         function()
-          local base, branch = review_base()
-          if not base then
-            return
-          end
-          -- callback: report a failure (e.g. a buffer from another repo) instead of a stack trace
-          require("gitsigns").change_base(base, true, function(err)
-            if err then
-              vim.notify("diff against " .. branch .. ": " .. err, vim.log.levels.WARN)
-            end
-          end)
+          require("config.util").gitsigns_review_base()
         end,
         desc = "Diff against review base (:ReviewBase)",
       },
