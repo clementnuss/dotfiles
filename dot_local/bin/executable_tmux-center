@@ -3,7 +3,7 @@
 # usage: tmux-center [toggle|resize|gc] [window-id]   (hooks in tmux.conf call resize/gc)
 set -eu
 
-WIDTH=230 # same as no-neck-pain.nvim, so nvim inside the centered pane doesn't re-center
+WIDTH=250 # a bit wider than no-neck-pain.nvim (230)
 MIN_PAD=10
 
 cmd=${1:-toggle}
