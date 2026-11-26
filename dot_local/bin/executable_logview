@@ -1,0 +1,13 @@
+#!/bin/zsh
+# logview FILE | cmd | logview: read-only nvim that follows the file (:Follow), stdin buffered to a temp file
+
+if [[ -t 0 ]]; then
+  nvim -R -c Follow "$@"
+  exit
+fi
+tmp=$(mktemp --suffix=.log)
+cat > "$tmp" &
+pid=$!
+nvim -R -c Follow "$tmp" < /dev/tty
+kill $pid 2>/dev/null
+rm -f "$tmp"

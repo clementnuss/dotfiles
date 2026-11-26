@@ -1,0 +1,54 @@
+#!/bin/sh
+# tmux center mode (no-neck-pain): blank full-height panes pad the window so content sits mid-screen.
+# usage: tmux-center [toggle|resize|gc] [window-id]   (hooks in tmux.conf call resize/gc)
+set -eu
+
+WIDTH=230 # same as no-neck-pain.nvim, so nvim inside the centered pane doesn't re-center
+MIN_PAD=10
+
+cmd=${1:-toggle}
+win=${2:-$(tmux display -p '#{window_id}')}
+
+pads() { tmux list-panes -t "$win" -F '#{pane_id} #{@nnp}' | awk '$2 == 1 { print $1 }'; }
+pad_width() { echo $((($(tmux display -p -t "$win" '#{window_width}') - WIDTH) / 2)); }
+unpad() { for p in $(pads); do tmux kill-pane -t "$p"; done; }
+fit() {
+	pad=$(pad_width)
+	if [ "$pad" -lt "$MIN_PAD" ]; then
+		unpad
+	else
+		for p in $(pads); do tmux resize-pane -t "$p" -x "$pad"; done
+	fi
+}
+
+case $cmd in
+toggle)
+	if [ -n "$(pads)" ]; then
+		unpad
+		exit
+	fi
+	pad=$(pad_width)
+	if [ "$pad" -lt "$MIN_PAD" ]; then
+		tmux display "center mode: window narrower than $((WIDTH + 2 * MIN_PAD)) cols"
+		exit
+	fi
+	for side in -b ""; do
+		id=$(tmux split-window -d -f -h $side -l "$pad" -t "$win" -P -F '#{pane_id}' 'exec sleep infinity')
+		tmux set -p -t "$id" @nnp 1
+	done
+	fit # the second split carves from the first one's leftover
+	;;
+resize)
+	[ -z "$(pads)" ] || fit
+	;;
+gc)
+	# a window left with only padding panes would linger forever: close it
+	tmux list-panes -a -F '#{window_id} #{@nnp}' |
+		awk '{ n[$1]++; if ($2 == 1) p[$1]++ } END { for (w in n) if (n[w] == p[w]) print w }' |
+		while read -r w; do tmux kill-window -t "$w"; done
+	;;
+*)
+	echo "usage: tmux-center [toggle|resize|gc] [window-id]" >&2
+	exit 2
+	;;
+esac

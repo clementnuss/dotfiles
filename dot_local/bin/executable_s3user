@@ -1,0 +1,16 @@
+#!/bin/zsh
+# s3user ls | add <name> | get <name> | rm <name>: versitygw users (s3.n8r.ch), one OpenBao KV field each
+
+kv=(-mount=secret k8s/appl-s3/users)
+case "$1" in
+  ls)  bao kv get -format=json $kv | jq -r '.data.data | keys[]' ;;
+  add) [[ -n "$2" ]] || { echo "usage: s3user add <name>"; exit 1 }
+       bao kv patch $kv "$2=$(openssl rand -base64 30)" >/dev/null && echo "added: $2" ;;
+  get) [[ -n "$2" ]] || { echo "usage: s3user get <name>"; exit 1 }
+       bao kv get -field="$2" $kv ;;
+  # kv patch can't delete a field: rewrite the entry without it
+  rm)  [[ -n "$2" ]] || { echo "usage: s3user rm <name>"; exit 1 }
+       bao kv get -format=json $kv | jq --arg u "$2" '.data.data | del(.[$u])' \
+         | bao kv put $kv - >/dev/null && echo "removed: $2" ;;
+  *)   echo "usage: s3user ls | add <name> | get <name> | rm <name>"; exit 1 ;;
+esac

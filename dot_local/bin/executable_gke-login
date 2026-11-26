@@ -1,0 +1,27 @@
+#!/bin/zsh
+# gke-login [project...]: refresh gcloud auth, rebuild ~/.kube/gke.yaml from all GKE clusters (default: every visible project)
+
+gcloud auth print-access-token >/dev/null 2>&1 || gcloud auth login || exit 1
+projects=("$@")
+(( $#projects )) || projects=(${(f)"$(gcloud projects list --format='value(projectId)')"})
+(( $#projects )) || { echo "no projects visible"; exit 1 }
+# fresh path, not an empty file: gcloud backs up an existing kubeconfig before writing
+dir=$(mktemp -d) || exit 1
+tmp=$dir/config
+for p in $projects; do
+  gcloud container clusters list --project "$p" --format='value(name,location)' 2>/dev/null |
+    while read -r name loc; do
+      # no '/' or ':' in names: kubesess uses them as cache file names inside $KUBECONFIG
+      ctx="gke-${p#victoriametrics-}-$name"
+      if KUBECONFIG=$tmp gcloud container clusters get-credentials "$name" --location "$loc" --project "$p" --quiet </dev/null 2>/dev/null &&
+        KUBECONFIG=$tmp kubectl config rename-context "gke_${p}_${loc}_${name}" "$ctx" </dev/null >/dev/null; then
+        echo "  $ctx"
+      else
+        echo "  failed: $p/$name ($loc)" >&2
+      fi
+    done
+done
+# no default context: pick one per shell with kc
+KUBECONFIG=$tmp kubectl config unset current-context >/dev/null
+[[ -f $tmp ]] && mv "$tmp" ~/.kube/gke.yaml
+rm -rf "$dir"

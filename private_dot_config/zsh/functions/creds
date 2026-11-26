@@ -1,0 +1,32 @@
+# creds [filter]: source one dev-docs/credentials/*.env; calling again unloads the previous one
+# autoloaded function, not a script: it must export into the calling shell
+
+local base="$HOME/git/github.com/clementnuss/dev-docs/credentials"
+if [[ -n "$_CREDS_LOADED" ]]; then
+  echo "unloading: $_CREDS_LOADED"
+  for var in ${(s/:/)_CREDS_VARS}; do
+    unset "$var"
+  done
+  unset _CREDS_LOADED _CREDS_VARS
+fi
+
+local file var
+if [[ -n "$1" ]]; then
+  file=$(ls "$base"/*.env 2>/dev/null | xargs -n1 basename | grep -i "$1" | head -1)
+  [[ -z "$file" ]] && echo "no match for: $1" && return 1
+else
+  file=$(ls "$base"/*.env 2>/dev/null | xargs -n1 basename | fzf --prompt="credentials> ")
+fi
+[[ -z "$file" ]] && echo "no credentials selected" && return 1
+
+local before after
+before=$(env | cut -d= -f1 | sort)
+source "$base/$file"
+after=$(env | cut -d= -f1 | sort)
+
+export _CREDS_LOADED="$file"
+export _CREDS_VARS=$(comm -13 <(echo "$before") <(echo "$after") | tr '\n' ':')
+
+local info=$(grep '^#' "$base/$file" | head -1 | sed 's/^# *//')
+echo "loaded: $file"
+[[ -n "$info" ]] && echo "  -> $info"
