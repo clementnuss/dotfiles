@@ -1,6 +1,27 @@
 # Package lists, read by run_onchange_install-packages.sh.tmpl and ~/.local/bin/pkg-drift.
 # A group with `profiles:` installs only on those profiles; without it, everywhere.
 packages:
+  base:
+    official:
+      - amd-ucode
+      - base
+      - base-devel
+      - btrfs-progs
+      - dosfstools
+      - efibootmgr
+      - framework-system
+      - fwupd
+      - git
+      - linux
+      - linux-firmware
+      - man-db
+      - mesa
+      - sudo
+      - vulkan-radeon
+      - zram-generator
+    aur:
+      - yay-bin
+
   system:
     official:
       - bluez
@@ -44,11 +65,13 @@ packages:
       - satty
       - slurp
       - swaybg
+      - swayimg
       - udiskie
       - uwsm
       - wl-clipboard
       - wl-mirror
       - wtype
+      - xdg-desktop-portal-hyprland
       - xdg-terminal-exec
     aur:
       - ddcutil-service
@@ -79,36 +102,55 @@ packages:
       - 7zip
       - atuin
       - bat
+      - bluetui
       - btop
       - chezmoi
+      - cyme
       - dog
+      - doggo
       - ffmpeg
       - fzf
       - ghq
       - git-delta
       - git-lfs
+      - github-cli
       - gpg-tui
+      - imagemagick
       - jq
       - lazygit
       - neovim
+      - python-pypdf
       - rbw
       - rclone
       - sops
       - starship
       - tmux
+      - vim
       - yazi
+      - yt-dlp
       - zoxide
       - zsh
     aur:
       - caligula-bin
+      - disktui
+      - gonzo
+      - rustledger-bin
+      - s5cmd-bin
 
   dev:
     official:
+      - git-cliff
       - go
       - go-task
+      - hugo
+      - markdownlint-cli2
       - nodejs
       - npm
+      - opencode
       - pnpm
+      - pre-commit
+    aur:
+      - claude-code
 
   containers:
     official:
@@ -120,23 +162,42 @@ packages:
 
   cloud:
     official:
+      - azure-cli
       - fluxcd
       - gke-gcloud-auth-plugin
       - google-cloud-cli
       - k9s
+      - krew
       - kubectl
+      - openbao
+      - opentofu
       - talosctl
+      - terraform
+      - vals
     aur:
       - kubesess-bin
 
   apps:
     official:
+      - audacity
       - chromium
+      - firefox
+      - gvfs-smb
+      - libraw
+      - libreoffice-fresh
+      - picard
+      - prusa-slicer
+      - qt6-connectivity
+      - signal-desktop
+      - strawberry
     aur:
       - kopia-bin
       - localsend-bin
       - masterpdfeditor
+      - onlyoffice-bin
+      - rustdesk-bin
       - seadrive-gui
+      - slack-desktop
       - vial-appimage
 
   work:
