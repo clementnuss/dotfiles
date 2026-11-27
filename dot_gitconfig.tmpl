@@ -33,6 +33,10 @@
 	hunk-header-style = file line-number syntax
 [credential]
 	helper = cache --timeout=86400
+# empty helper drops the cache for this host: rbw is the only store
+[credential "https://git.n8r.ch"]
+	helper =
+	helper = "!f() { test \"$1\" = get || exit 0; t=$(rbw get git.n8r.ch -f access-token) || exit 0; printf 'username=cjmnuss\\npassword=%s\\n' \"$t\"; }; f"
 [filter "lfs"]
 	clean = git-lfs clean -- %f
 	smudge = git-lfs smudge -- %f
